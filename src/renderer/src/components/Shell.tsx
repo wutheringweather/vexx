@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { ViewId } from '../App'
-import { EXECUTION_MODES, findNetwork } from '@shared/constants'
+import { EXECUTION_MODES, EXTERNAL_LINKS, findNetwork } from '@shared/constants'
 import { useStore } from '../lib/store'
 import { api } from '../lib/api'
 import { countdown } from '../lib/format'
@@ -14,6 +14,7 @@ import {
   IconMemory,
   IconMission,
   IconOverview,
+  IconBrandX,
   IconSettings,
   IconWallet
 } from '../lib/icons'
@@ -144,6 +145,19 @@ export default function Shell({
             onClick={() => void run(() => api.vault.lock(), 'Vault locked.')}
           >
             <IconLock size={12} /> Lock now
+          </button>
+        </div>
+
+        {/* Routed through the same vetted channel as an explorer link, so the
+            renderer still cannot open a URL of its own choosing. */}
+        <div className="sidebar__foot">
+          <button
+            className="social"
+            title="VexDesk on X"
+            aria-label="VexDesk on X"
+            onClick={() => void run(() => api.openExternal(EXTERNAL_LINKS.x))}
+          >
+            <IconBrandX size={13} />
           </button>
         </div>
       </aside>

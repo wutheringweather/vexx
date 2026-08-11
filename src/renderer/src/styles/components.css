@@ -220,6 +220,30 @@
   background: var(--danger-soft);
 }
 
+/* --- Sidebar footer ------------------------------------------------------ */
+
+.sidebar__foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--s-3);
+}
+
+.social {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+
+.social:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
 /* --- Topbar -------------------------------------------------------------- */
 
 .main {

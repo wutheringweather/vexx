@@ -1,7 +1,12 @@
 import { BrowserWindow, ipcMain, shell } from 'electron'
 import { z } from 'zod'
 import type { AppSnapshot, BalanceInfo, ChatMessage } from '@shared/types'
-import { EXECUTION_MODES, NETWORKS, findNetwork } from '@shared/constants'
+import {
+  EXECUTION_MODES,
+  NETWORKS,
+  findNetwork,
+  isAllowedExternalLink
+} from '@shared/constants'
 import { newId } from './storage/files'
 import * as state from './state'
 import * as audit from './audit/log'
@@ -547,11 +552,9 @@ export function registerHandlers(): void {
   handle('shell:open-external', async (payload) => {
     const { url } = z.object({ url: z.string().url().max(500) }).parse(payload)
     const parsed = new URL(url)
-    // Only https, and only to explorers this build already knows about.
-    const allowed = NETWORKS.some(
-      (n) =>
-        url.startsWith(n.explorerTxUrl) || url.startsWith(n.explorerAddressUrl)
-    )
+    // Only https, and only to explorers this build already knows about plus the
+    // handful of complete URLs in EXTERNAL_LINKS. Still no wildcard domains.
+    const allowed = isAllowedExternalLink(url)
     if (parsed.protocol !== 'https:' || !allowed) {
       throw new Error('That link is not on the allowlist.')
     }

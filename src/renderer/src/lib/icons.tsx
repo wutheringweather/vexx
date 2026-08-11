@@ -194,3 +194,13 @@ export const IconInbox = (p: IconProps): React.JSX.Element => (
     <path d="M5.6 5.5h12.8l2.1 8v5a2 2 0 0 1-2 2H5.5a2 2 0 0 1-2-2v-5l2.1-8Z" />
   </Icon>
 )
+
+/**
+ * A brand glyph rather than a drawn icon, so it fills instead of strokes.
+ * Named IconBrandX because IconX above is the close cross.
+ */
+export const IconBrandX = (p: IconProps): React.JSX.Element => (
+  <Icon {...p} fill="currentColor" stroke="none">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117Z" />
+  </Icon>
+)

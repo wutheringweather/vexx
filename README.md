@@ -6,6 +6,8 @@ between every proposal and every signature.
 
 Built for **Windows and macOS**.
 
+[![X](https://img.shields.io/badge/X-@vexdesktop-000000?logo=x&logoColor=white)](https://x.com/vexdesktop)
+
 ---
 
 ## What it does

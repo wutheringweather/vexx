@@ -142,6 +142,22 @@ export const AUTO_LOCK_MINUTES = 15
 export const DERIVATION_PATH_EVM = "m/44'/60'/0'/0/0"
 export const DERIVATION_PATH_SOLANA = "m/44'/501'/0'/0'"
 
+/**
+ * Non-explorer links the app is allowed to open, matched exactly.
+ *
+ * The external-link gate is otherwise limited to block explorers. Widening it
+ * to a whole domain would mean any string starting with `https://x.com/` gets
+ * through, so this stays a list of complete URLs the build already knows.
+ */
+export const EXTERNAL_LINKS = {
+  x: 'https://x.com/vexdesktop'
+} as const
+
+export function isAllowedExternalLink(url: string): boolean {
+  if (Object.values(EXTERNAL_LINKS).includes(url as never)) return true
+  return NETWORKS.some((n) => url.startsWith(n.explorerTxUrl) || url.startsWith(n.explorerAddressUrl))
+}
+
 export function findNetwork(id: string): NetworkInfo | undefined {
   return NETWORKS.find((n) => n.id === id)
 }
