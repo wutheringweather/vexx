@@ -1,0 +1,57 @@
+name: Release
+
+# Publishes installers to a GitHub Release, which is also the feed
+# electron-updater reads. Tag a version to trigger it:
+#
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# The Windows build is unsigned unless CSC_LINK and CSC_KEY_PASSWORD are set as
+# repository secrets; SmartScreen warns on unsigned installers. macOS builds are
+# unsigned without an Apple Developer ID, and macOS auto-update does not work at
+# all on an unsigned build — see the notarize note in electron-builder.yml.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: package:win
+          - os: macos-latest
+            script: package:mac
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run ${{ matrix.script }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Notarization is skipped unless all three are present as secrets.
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/*.exe
+            release/*.dmg
+            release/*.blockmap
+            release/latest*.yml
+          draft: true

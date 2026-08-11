@@ -1,0 +1,21 @@
+node_modules/
+out/
+release/
+dist/
+*.log
+.DS_Store
+Thumbs.db
+*.tsbuildinfo
+
+# Never commit anything that could carry key material or a provider token.
+.env
+.env.local
+keystore.json
+state.json
+audit.jsonl
+lessons.json
+conversations.json
+
+# Editor
+.vscode/
+.idea/

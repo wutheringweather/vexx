@@ -1,0 +1,95 @@
+appId: ai.vexdesk.app
+productName: VexDesk
+copyright: Copyright © 2026
+
+directories:
+  buildResources: build
+  output: release
+
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+  - '!**/*.ts'
+
+asar: true
+
+# VexDesk has no native modules of its own. The only ones in the tree are
+# bufferutil and utf-8-validate — optional C++ accelerators that ws pulls in via
+# @solana/web3.js and works perfectly well without. Rebuilding them would demand
+# Visual Studio build tools on every machine that packages the app, for no gain.
+npmRebuild: false
+
+# Windows -------------------------------------------------------------------
+# Signing: set CSC_LINK to a .pfx path or base64 blob and CSC_KEY_PASSWORD to
+# its password, then rebuild. electron-builder picks both up from the
+# environment — nothing here needs to change. Without them the build is
+# unsigned and SmartScreen warns on first run.
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+  artifactName: ${productName}-${version}-win-${arch}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: VexDesk
+
+portable:
+  artifactName: ${productName}-${version}-win-portable.${ext}
+
+# macOS ---------------------------------------------------------------------
+mac:
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+  category: public.app-category.finance
+  darkModeSupport: true
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+  # Notarization runs only when these are present in the environment:
+  #   APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID
+  # plus a "Developer ID Application" certificate in the login keychain.
+  # Requires a paid Apple Developer account. Without it the build is unsigned,
+  # Gatekeeper warns, and macOS auto-update will not work at all.
+  notarize: true
+
+# Linux ---------------------------------------------------------------------
+# Not built by default; run `electron-builder --linux` when it is wanted.
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+  category: Office
+  synopsis: Self-custodial desktop crypto agent
+  artifactName: ${productName}-${version}-linux-${arch}.${ext}
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# Release feed for the auto-updater. electron-builder only emits the
+# app-update.yml that the updater reads when this is set, so an unpublished
+# local build never phones home. Fill in owner/repo and publish a release to
+# switch updates on — no code change needed.
+publish:
+  - provider: github
+    owner: wutheringweather
+    repo: vexx
+    releaseType: release
