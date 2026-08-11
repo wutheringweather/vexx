@@ -16,6 +16,7 @@ audit.jsonl
 lessons.json
 conversations.json
 
-# Editor
+# Editor and local tooling
 .vscode/
 .idea/
+.claude/
