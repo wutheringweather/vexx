@@ -13,6 +13,7 @@ import Guardrails from './views/Guardrails'
 import Memory from './views/Memory'
 import AuditTrail from './views/AuditTrail'
 import Settings from './views/Settings'
+import vxMark from './assets/vx-mark.png'
 
 export type ViewId =
   | 'overview'
@@ -87,7 +88,7 @@ function Booting(): React.JSX.Element {
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">
-          <div className="brand__mark">VX</div>
+          <img className="brand__mark" src={vxMark} alt="" />
           <div>
             <div className="brand__name">VexDesk</div>
             <div className="brand__tag">Local runtime</div>

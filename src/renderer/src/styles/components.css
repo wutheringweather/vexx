@@ -30,18 +30,13 @@
   -webkit-app-region: drag;
 }
 
+/* The mark carries its own gold tile and rounded corners baked in, so this
+   just sizes and places it — no background or text styling to double up. */
 .brand__mark {
-  display: grid;
-  place-items: center;
+  display: block;
   width: 26px;
   height: 26px;
-  border-radius: var(--r-sm);
-  background: var(--accent);
-  color: var(--on-accent);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: -0.04em;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
@@ -1417,19 +1412,13 @@ kbd {
   padding: var(--s-6) var(--s-6) var(--s-4);
 }
 
+/* See the note on .brand__mark — the image is the whole mark. */
 .gate-card__mark {
+  display: block;
   width: 38px;
   height: 38px;
   margin-bottom: var(--s-4);
-  border-radius: var(--r-md);
-  display: grid;
-  place-items: center;
-  background: var(--accent);
-  color: var(--on-accent);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: -0.04em;
+  object-fit: contain;
 }
 
 .gate-card__title {

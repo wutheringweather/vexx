@@ -3,6 +3,7 @@ import { api } from '../lib/api'
 import { useStore } from '../lib/store'
 import { Callout, Field } from '../components/ui'
 import { IconCheck, IconCopy, IconLock } from '../lib/icons'
+import vxMark from '../assets/vx-mark.png'
 
 type Stage = 'choose' | 'create' | 'import' | 'reveal' | 'unlock'
 
@@ -51,7 +52,7 @@ export default function VaultGate(): React.JSX.Element {
     <div className="gate-screen">
       <div className="gate-card">
         <div className="gate-card__head">
-          <div className="gate-card__mark">VX</div>
+          <img className="gate-card__mark" src={vxMark} alt="" />
           <div className="gate-card__title">
             {stage === 'unlock'
               ? 'Unlock VexDesk'
