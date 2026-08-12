@@ -111,42 +111,34 @@ npm install
 npm run dev
 ```
 
-On first launch you create a vault: pick a master password, write down the
-24-word recovery phrase. It is shown exactly once and cannot be recovered.
+On first launch you enter the access key for the built-in assistant, then create
+a vault: pick a master password and write down the 24-word recovery phrase. The
+phrase is shown exactly once and cannot be recovered.
 
-## Connecting a model
+## Connecting the built-in assistant
 
-The agent speaks to any **OpenAI-compatible** endpoint. MegaLLM is the default.
-
-Go to **Settings → Model provider** and set:
-
-- Base URL — `https://ai.megallm.io/v1`
-- Model — e.g. `openai-gpt-oss-120b`
-- API key — stored through the OS keychain (DPAPI on Windows, Keychain on
-  macOS). It is never sent to the renderer and never written to the audit log.
-
-Without a key the app still runs: a deterministic local planner answers
-read-only questions about balances, prices, quotes, guardrails and memory. It
-will not propose fund-moving actions from free-form text, by design.
+Paste the access key when the app first opens. It is stored through the
+operating-system keychain (DPAPI on Windows, Keychain on macOS). The key is not
+shown again or written to the audit log. The service endpoint and model are
+part of the desktop runtime; there is no custom provider setup in the UI.
 
 The narrow direct command `buy <amount> SOL` is an exception to the model
 provider requirement, but it still requires a Jupiter key and every gate
 check. It is not a general-purpose pattern matcher for fund-moving text.
 
-For a desktop deployment that should not show a key setup step, inject the key
-once through the process environment before starting VexDesk:
+For an unattended desktop deployment, the key can also be injected once through
+the process environment before starting VexDesk:
 
 ```powershell
 $env:VEXDESK_JUPITER_API_KEY = Read-Host 'Jupiter API key'
-$env:VEXDESK_LLM_API_KEY = Read-Host 'Optional MegaLLM API key'
+$env:VEXDESK_LLM_API_KEY = Read-Host 'Access key'
 Start-Process '.\VexDesk.exe' -Wait
 Remove-Item Env:VEXDESK_JUPITER_API_KEY,Env:VEXDESK_LLM_API_KEY -ErrorAction SilentlyContinue
 ```
 
 On first launch VexDesk seals the values with Windows DPAPI and removes the
 environment copies from its process. It does not bake secrets into the
-installer. The optional LLM key uses the existing default MegaLLM endpoint and
-model; no custom provider configuration is required.
+installer.
 
 ## Commands
 

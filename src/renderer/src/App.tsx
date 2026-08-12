@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { StoreProvider, useStore } from './lib/store'
 import { Skeleton, Toasts } from './components/ui'
+import AccessKeyGate from './views/AccessKeyGate'
 import VaultGate from './views/VaultGate'
 import Shell from './components/Shell'
 import CommandPalette from './components/CommandPalette'
@@ -78,7 +79,7 @@ const VIEWS: Record<ViewId, ViewDef> = {
   },
   settings: {
     title: 'Settings',
-    subtitle: 'Model provider and vault management',
+    subtitle: 'AI access and vault management',
     render: () => <Settings />
   }
 }
@@ -142,6 +143,15 @@ function Root(): React.JSX.Element {
   }, [])
 
   if (loading || !snapshot) return <Booting />
+
+  if (!snapshot.llm.hasApiKey) {
+    return (
+      <>
+        <AccessKeyGate />
+        <Toasts />
+      </>
+    )
+  }
 
   // Nothing but the vault screen exists until there is a key to work with.
   if (snapshot.vault.state !== 'unlocked') {

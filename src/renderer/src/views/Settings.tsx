@@ -87,8 +87,8 @@ export default function Settings(): React.JSX.Element {
   return (
     <>
       <Card
-        title="Model provider"
-        description="Any OpenAI-compatible endpoint. MegaLLM by default."
+        title="AI access"
+        description="The built-in assistant uses the access key stored on this device."
         actions={
           snapshot.llm.hasApiKey ? (
             <Tag tone="success">key stored</Tag>
@@ -98,27 +98,19 @@ export default function Settings(): React.JSX.Element {
         }
       >
         <div className="stack">
-          <Field label="Base URL" hint="The /chat/completions path is appended automatically.">
-            <input className="input input--mono" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} />
-          </Field>
-
-          <Field label="Model">
-            <input className="input input--mono" value={model} onChange={(e) => setModel(e.target.value)} />
-          </Field>
-
           <Field
-            label="API key"
+            label="Access key"
             hint={
               snapshot.llm.hasApiKey
                 ? 'A key is already stored. Leave this blank to keep it, or type a new one to replace it.'
-                : 'Stored via the OS keychain (DPAPI on Windows, Keychain on macOS). It is never sent to the renderer and never written to the audit log.'
+                : 'Stored via the operating-system keychain. It is never returned to the interface or written to the audit log.'
             }
           >
             <input
               className="input input--mono"
               type="password"
               value={apiKey}
-              placeholder={snapshot.llm.hasApiKey ? '••••••••••••••••' : 'sk-…'}
+              placeholder={snapshot.llm.hasApiKey ? '••••••••••••••••' : 'Paste access key'}
               onChange={(e) => setApiKey(e.target.value)}
             />
           </Field>
@@ -149,7 +141,7 @@ export default function Settings(): React.JSX.Element {
 
           {probe && (
             <Callout tone={probe.ok ? 'success' : 'danger'}>
-              <strong>{probe.ok ? 'Provider reachable' : 'Provider failed'}</strong> — {probe.detail}
+              <strong>{probe.ok ? 'Connection reachable' : 'Connection failed'}</strong> — {probe.detail}
               {probe.ok ? ` (${probe.latencyMs} ms)` : ''}
             </Callout>
           )}
@@ -166,7 +158,7 @@ export default function Settings(): React.JSX.Element {
                 onClick={() =>
                   void run(
                     () => api.llm.update({ baseUrl, model, temperature, maxTokens, apiKey: '' }),
-                    'API key removed.'
+                    'Access key removed.'
                   )
                 }
               >
@@ -174,7 +166,7 @@ export default function Settings(): React.JSX.Element {
               </button>
             )}
             <button className="btn btn--primary" disabled={busy} onClick={() => void saveProvider()}>
-              <IconCheck size={15} /> {busy ? 'Saving…' : 'Save'}
+              <IconCheck size={15} /> {busy ? 'Saving…' : 'Save key'}
             </button>
           </div>
         </div>
