@@ -111,28 +111,40 @@ npm install
 npm run dev
 ```
 
-On first launch you enter the access key for the built-in assistant, then create
-a vault: pick a master password and write down the 24-word recovery phrase. The
-phrase is shown exactly once and cannot be recovered.
+On first launch you are offered model-provider setup — which you can skip — and
+then create a vault: pick a master password and write down the 24-word recovery
+phrase. The phrase is shown exactly once and cannot be recovered.
 
 ## Connecting the built-in assistant
 
-Paste the access key when the app first opens. It is stored through the
-operating-system keychain (DPAPI on Windows, Keychain on macOS). The key is not
-shown again or written to the audit log.
+VexDesk is **bring-your-own-key**. On first launch you are asked for an
+endpoint, a model and your own API key; the endpoint can be anything speaking
+the OpenAI chat-completions dialect. Requests go straight from your machine to
+that endpoint. There is no VexDesk server in the middle, nothing is billed to
+us, and no provider credential ships inside the installer — anything that did
+could be pulled back out of it.
 
-The key is a **VexDesk** key, not a provider key. It is metered per user and can
-be revoked, and the real provider credential lives only on the server behind
-`api.vexdesktop.xyz` — see [`proxy/`](proxy/). Nothing shipped in an installer
-can be a secret, so no provider key is shipped in one.
+The key is stored through the operating-system keychain (DPAPI on Windows,
+Keychain on macOS). It is not shown again and never written to the audit log.
+You can change any of it later in **Settings → Model provider**.
 
-### Or bring your own
+### You can skip it
 
-**Settings → AI access** exposes the endpoint and model. Point them at anything
-that speaks the OpenAI chat-completions dialect, add your own key, and your
-traffic goes straight there — VexDesk never sees it. The desktop app is
-provider-agnostic and always was; the hosted endpoint is a default, not a
-requirement.
+The setup screen has **Continue without a provider**, and that is a real option
+rather than a delay. The vault, the safety gate, the approval queue and the
+audit trail need no model at all, and a deterministic local planner still
+answers read-only questions about balances, prices, quotes, guardrails and
+memory. It will not propose a fund-moving action — an action nobody reasoned
+about should not reach the gate just because a pattern matched.
+
+Add a key whenever you want the reasoning agent. Missions need one: without a
+provider the loop has nothing to think with.
+
+### A hosted endpoint also exists
+
+[`proxy/`](proxy/) is a small forwarder that keeps a provider key server-side
+and meters callers, for deployments where handing every operator their own
+vendor account is not practical. It is optional and off the default path.
 
 ### What is sent, and what is not
 

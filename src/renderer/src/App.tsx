@@ -79,7 +79,7 @@ const VIEWS: Record<ViewId, ViewDef> = {
   },
   settings: {
     title: 'Settings',
-    subtitle: 'AI access and vault management',
+    subtitle: 'Model provider, memory and vault management',
     render: () => <Settings />
   }
 }
@@ -128,6 +128,10 @@ function Root(): React.JSX.Element {
   const { snapshot, loading } = useStore()
   const [view, setView] = useState<ViewId>('overview')
   const [paletteOpen, setPaletteOpen] = useState(false)
+  // Session-only: someone who skipped setup should not be asked again on the
+  // way to the vault, but a fresh launch is a fair moment to offer it once more.
+  // The Overview banner carries the reminder in between.
+  const [providerSetupSkipped, setProviderSetupSkipped] = useState(false)
 
   const navigate = useCallback((next: ViewId) => setView(next), [])
 
@@ -144,16 +148,16 @@ function Root(): React.JSX.Element {
 
   if (loading || !snapshot) return <Booting />
 
-  if (!snapshot.llm.hasApiKey) {
+  // Offered once per launch, never enforced. The agent is one feature; the
+  // vault, the gate and the audit trail do not need a model provider at all.
+  if (!snapshot.llm.hasApiKey && !providerSetupSkipped) {
     return (
       <>
-        <AccessKeyGate />
+        <AccessKeyGate onSkip={() => setProviderSetupSkipped(true)} />
         <Toasts />
       </>
     )
   }
-
-  // Nothing but the vault screen exists until there is a key to work with.
   if (snapshot.vault.state !== 'unlocked') {
     return (
       <>

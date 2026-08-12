@@ -1,11 +1,16 @@
 # VexDesk model endpoint
 
+**Optional, and off the default path.** VexDesk desktop is bring-your-own-key:
+an operator points it at their own endpoint with their own credential, and
+nothing routes through us. This exists for the case where that is not practical
+— a fleet of machines, or people you would rather not hand a vendor account.
+
 The service behind `https://api.vexdesktop.xyz/v1`. It is a forwarder, not an
 API: VexDesk desktop already speaks the OpenAI chat-completions dialect, so this
 authenticates the caller, meters them, swaps in the real provider credential and
 streams the answer back unchanged.
 
-It exists to enforce two things the desktop app cannot:
+It exists to enforce two things a desktop build cannot:
 
 - **The provider key stays on the server.** Anything shipped inside an installer
   can be pulled back out of it, whatever it was sealed with. Only this service

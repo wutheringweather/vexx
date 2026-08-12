@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import type { EmbeddingProbeResult, JupiterProbeResult, LlmProbeResult } from '@shared/types'
-import { DEFAULT_LLM_BASE_URL } from '@shared/constants'
 import { api } from '../lib/api'
 import { useSnapshot, useStore } from '../lib/store'
 import { Callout, Card, Field, Modal, Switch, Tag } from '../components/ui'
@@ -88,8 +87,8 @@ export default function Settings(): React.JSX.Element {
   return (
     <>
       <Card
-        title="AI access"
-        description="The built-in assistant uses the access key stored on this device."
+        title="Model provider"
+        description="Your own key, your own endpoint. Without one, a local planner answers read-only questions."
         actions={
           snapshot.llm.hasApiKey ? (
             <Tag tone="success">key stored</Tag>
@@ -100,7 +99,7 @@ export default function Settings(): React.JSX.Element {
       >
         <div className="stack">
           <Field
-            label="Access key"
+            label="API key"
             hint={
               snapshot.llm.hasApiKey
                 ? 'A key is already stored. Leave this blank to keep it, or type a new one to replace it.'
@@ -111,7 +110,7 @@ export default function Settings(): React.JSX.Element {
               className="input input--mono"
               type="password"
               value={apiKey}
-              placeholder={snapshot.llm.hasApiKey ? '••••••••••••••••' : 'Paste access key'}
+              placeholder={snapshot.llm.hasApiKey ? '••••••••••••••••' : 'Paste your provider key'}
               onChange={(e) => setApiKey(e.target.value)}
             />
           </Field>
@@ -122,11 +121,7 @@ export default function Settings(): React.JSX.Element {
           <div className="grid grid--2">
             <Field
               label="Endpoint"
-              hint={
-                baseUrl === DEFAULT_LLM_BASE_URL
-                  ? 'The VexDesk endpoint. Point this anywhere OpenAI-compatible to use your own provider instead.'
-                  : 'Custom provider. Your key above is sent to this endpoint, not to VexDesk.'
-              }
+              hint="Any endpoint speaking the OpenAI chat-completions dialect. Your key goes only here."
             >
               <input
                 className="input input--mono"
@@ -145,12 +140,10 @@ export default function Settings(): React.JSX.Element {
             </Field>
           </div>
 
-          {baseUrl !== DEFAULT_LLM_BASE_URL && (
-            <Callout>
-              Using your own provider. VexDesk never sees these requests. Wallet addresses are
-              stripped from every prompt either way.
-            </Callout>
-          )}
+          <Callout>
+            Requests go straight from this machine to the endpoint above — VexDesk runs no server in
+            the middle. Wallet addresses are stripped from every prompt before it is sent.
+          </Callout>
 
           <div className="grid grid--2">
             <Field label="Temperature" hint="Lower is steadier. 0.3 is a sensible default here.">
