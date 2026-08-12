@@ -54,4 +54,9 @@ jobs:
             release/*.dmg
             release/*.blockmap
             release/latest*.yml
-          draft: true
+          # Published straight away, and never as a pre-release: electron-updater
+          # skips pre-releases unless allowPrerelease is set, and GitHub excludes
+          # them from "latest". A draft would be invisible to both.
+          draft: false
+          prerelease: false
+          generate_release_notes: true

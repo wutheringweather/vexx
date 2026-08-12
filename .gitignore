@@ -7,6 +7,9 @@ dist/
 Thumbs.db
 *.tsbuildinfo
 
+# electron-vite writes a timestamped config next to the real one while it runs
+electron.vite.config.*.mjs
+
 # Never commit anything that could carry key material or a provider token.
 .env
 .env.local
