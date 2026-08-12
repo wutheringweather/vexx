@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { findNetwork } from '@shared/constants'
 import { api } from '../lib/api'
 import { useSnapshot, useStore } from '../lib/store'
@@ -23,6 +23,10 @@ export default function Wallet(): React.JSX.Element {
   const [buySymbol, setBuySymbol] = useState('USDC')
   const [sellAmount, setSellAmount] = useState('')
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    setNetworkId(snapshot.activeEvmNetworkId)
+  }, [snapshot.activeEvmNetworkId])
 
   async function propose(): Promise<void> {
     setBusy(true)
@@ -101,7 +105,10 @@ export default function Wallet(): React.JSX.Element {
       </div>
 
       <div className="grid grid--2">
-        <Card title="Networks" description="Mainnets stay unselectable until you enable them in Guardrails">
+        <Card
+          title="Networks"
+          description="Switch the active chain here. Disabling mainnet automatically returns active networks to testnets."
+        >
           <div className="stack">
             <Field label="EVM network">
               <select
@@ -120,6 +127,13 @@ export default function Wallet(): React.JSX.Element {
                   </option>
                 ))}
               </select>
+              <div className="tiny muted" style={{ marginTop: 6 }}>
+                <Tag tone={findNetwork(snapshot.activeEvmNetworkId)?.isMainnet ? 'danger' : 'success'}>
+                  {findNetwork(snapshot.activeEvmNetworkId)?.isMainnet
+                    ? 'ACTIVE MAINNET · REAL FUNDS'
+                    : 'ACTIVE TESTNET · SAFE'}
+                </Tag>
+              </div>
             </Field>
 
             <Field label="Solana network">
@@ -139,6 +153,11 @@ export default function Wallet(): React.JSX.Element {
                   </option>
                 ))}
               </select>
+              <div className="tiny muted" style={{ marginTop: 6 }}>
+                <Tag tone={solNetwork?.isMainnet ? 'danger' : 'success'}>
+                  {solNetwork?.isMainnet ? 'ACTIVE MAINNET · REAL FUNDS' : 'ACTIVE TESTNET · SAFE'}
+                </Tag>
+              </div>
             </Field>
 
             <div className="inline">
@@ -156,8 +175,11 @@ export default function Wallet(): React.JSX.Element {
             </div>
 
             <Callout>
-              To fund the EVM testnet address, use a public Sepolia or Base Sepolia faucet with the
-              address above. VexDesk never asks anyone for funds on your behalf.
+              <strong>{snapshot.policy.mainnetEnabled ? 'Mainnet is enabled.' : 'Testnet-only mode.'}</strong>{' '}
+              The active networks above are the networks used for balances and direct commands.
+              Live Jupiter buys work only on Solana Mainnet; switch back to Solana Devnet before
+              testing without real funds. To fund the EVM testnet address, use a public Sepolia or
+              Base Sepolia faucet. VexDesk never asks anyone for funds on your behalf.
             </Callout>
           </div>
         </Card>

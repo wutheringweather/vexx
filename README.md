@@ -133,6 +133,21 @@ The narrow direct command `buy <amount> SOL` is an exception to the model
 provider requirement, but it still requires a Jupiter key and every gate
 check. It is not a general-purpose pattern matcher for fund-moving text.
 
+For a desktop deployment that should not show a key setup step, inject the key
+once through the process environment before starting VexDesk:
+
+```powershell
+$env:VEXDESK_JUPITER_API_KEY = Read-Host 'Jupiter API key'
+$env:VEXDESK_LLM_API_KEY = Read-Host 'Optional MegaLLM API key'
+Start-Process '.\VexDesk.exe' -Wait
+Remove-Item Env:VEXDESK_JUPITER_API_KEY,Env:VEXDESK_LLM_API_KEY -ErrorAction SilentlyContinue
+```
+
+On first launch VexDesk seals the values with Windows DPAPI and removes the
+environment copies from its process. It does not bake secrets into the
+installer. The optional LLM key uses the existing default MegaLLM endpoint and
+model; no custom provider configuration is required.
+
 ## Commands
 
 ```bash
@@ -221,7 +236,7 @@ to do things; signing authority never crosses the boundary.
 npm test
 ```
 
-115 tests covering the gate's refusal paths, keystore round-trips and tamper
+120 tests covering the gate's refusal paths, keystore round-trips and tamper
 detection, BIP-39/SLIP-0010 derivation against known vectors, secret redaction,
 memory decay, semantic recall and its lexical fallback, audit-chain integrity,
 conversation persistence, and an end-to-end run of the action pipeline from

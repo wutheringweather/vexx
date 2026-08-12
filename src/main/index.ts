@@ -8,6 +8,7 @@ import * as keystore from './vault/keystore'
 import * as updater from './updater'
 import { setEmbeddingConfigResolver } from './memory/lessons'
 import { bindWindow, embeddingConfig, pushSnapshot, registerHandlers, wireMissionUpdates } from './ipc'
+import { bootstrapRuntimeSecrets } from './runtime-secrets'
 
 /**
  * Content Security Policy for the renderer.
@@ -107,6 +108,7 @@ app.whenReady().then(async () => {
   hardenSession()
 
   await state.load()
+  await bootstrapRuntimeSecrets()
   registerHandlers()
   wireMissionUpdates()
 

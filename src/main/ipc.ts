@@ -3,6 +3,8 @@ import { z } from 'zod'
 import type { AppSnapshot, BalanceInfo, ChatMessage } from '@shared/types'
 import {
   EXECUTION_MODES,
+  DEFAULT_EVM_NETWORK,
+  DEFAULT_SOLANA_NETWORK,
   NETWORKS,
   findNetwork,
   isAllowedExternalLink
@@ -16,6 +18,7 @@ import * as evm from './chains/evm'
 import * as solana from './chains/solana'
 import * as market from './chains/market'
 import * as jupiter from './chains/jupiter'
+import { forceTestnets, networkSelectionError } from './networks'
 import * as actions from './agent/actions'
 import * as mission from './agent/mission'
 import * as conversations from './agent/conversations'
@@ -266,8 +269,20 @@ export function registerHandlers(): void {
   handle('policy:update', async (payload) => {
     const policy = policySchema.parse(payload)
     const previous = state.current().policy
+    let networkFallback: { activeEvmNetworkId?: string; activeSolanaNetworkId?: string } = {}
     await state.update((draft) => {
       draft.policy = policy
+      if (!policy.mainnetEnabled) {
+        const safe = forceTestnets(draft)
+        if (safe.activeEvmNetworkId !== draft.activeEvmNetworkId) {
+          networkFallback.activeEvmNetworkId = safe.activeEvmNetworkId
+          draft.activeEvmNetworkId = safe.activeEvmNetworkId
+        }
+        if (safe.activeSolanaNetworkId !== draft.activeSolanaNetworkId) {
+          networkFallback.activeSolanaNetworkId = safe.activeSolanaNetworkId
+          draft.activeSolanaNetworkId = safe.activeSolanaNetworkId
+        }
+      }
     })
 
     await audit.record('policy', 'Guardrail policy updated', {
@@ -281,6 +296,13 @@ export function registerHandlers(): void {
     if (policy.emergencyStop && !previous.emergencyStop) {
       await actions.expireAllPending('Emergency stop engaged')
       await mission.stopAll('emergency-stop')
+    }
+    if (Object.keys(networkFallback).length > 0) {
+      await audit.record('system', 'Mainnet disabled; active networks returned to testnets', {
+        ...networkFallback,
+        defaults: { evm: DEFAULT_EVM_NETWORK, solana: DEFAULT_SOLANA_NETWORK }
+      })
+      await refreshBalances()
     }
     await pushSnapshot()
     return policy
@@ -302,9 +324,8 @@ export function registerHandlers(): void {
     const { networkId } = z.object({ networkId: z.string().min(1) }).parse(payload)
     const network = findNetwork(networkId)
     if (!network) throw new Error(`Unknown network "${networkId}".`)
-    if (network.isMainnet && !state.current().policy.mainnetEnabled) {
-      throw new Error('Enable mainnet in Guardrails before selecting a mainnet network.')
-    }
+    const selectionError = networkSelectionError(network, state.current().policy.mainnetEnabled)
+    if (selectionError) throw new Error(selectionError)
 
     await state.update((draft) => {
       if (network.family === 'evm') draft.activeEvmNetworkId = networkId
