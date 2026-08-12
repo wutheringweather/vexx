@@ -10,9 +10,11 @@ import * as state from '../state'
 import * as audit from '../audit/log'
 import * as lessons from '../memory/lessons'
 import { evaluate } from '../guard/gate'
-import { isUnlocked, publicAddresses } from '../vault/keystore'
+import { isUnlocked, publicAddresses, requireSolanaKey } from '../vault/keystore'
 import * as evm from '../chains/evm'
 import * as solana from '../chains/solana'
+import * as jupiter from '../chains/jupiter'
+import { open as openSecret } from '../storage/secret-store'
 
 /**
  * The one path from "the agent wants to do something" to "something happened".
@@ -30,7 +32,8 @@ function gateContextFor(missionId: string | null, mode: ExecutionMode) {
     mode,
     missionDeployedUsd: mission?.deployedUsd ?? 0,
     missionRealisedUsd: mission?.realisedUsd ?? 0,
-    vaultUnlocked: isUnlocked()
+    vaultUnlocked: isUnlocked(),
+    liveExecutionReady: Boolean(openSecret(s.jupiter.apiKeyCipher))
   }
 }
 
@@ -155,27 +158,31 @@ async function executeApproved(
   await state.update((draft) => {
     const target = draft.actions.find((a) => a.id === actionId)
     if (!target) return
-    target.status = result.ok ? 'executed' : 'failed'
+    target.status = result.simulated ? 'simulated' : result.ok ? 'executed' : 'failed'
     target.execution = result
     target.resolvedAt = Date.now()
 
     if (target.missionId) {
       const mission = draft.missions.find((m) => m.id === target.missionId)
       if (mission) {
-        mission.deployedUsd += target.action.estimatedUsd
+        if (!result.simulated) mission.deployedUsd += target.action.estimatedUsd
         mission.realisedUsd += result.realisedUsd
       }
     }
   })
 
-  await audit.record('execution', result.ok ? 'Action executed' : 'Action failed', {
-    actionId,
-    approvedBy,
-    simulated: result.simulated,
-    txHash: result.txHash,
-    detail: result.detail,
-    realisedUsd: result.realisedUsd
-  })
+  await audit.record(
+    'execution',
+    result.simulated ? 'Action simulated' : result.ok ? 'Action executed' : 'Action failed',
+    {
+      actionId,
+      approvedBy,
+      simulated: result.simulated,
+      txHash: result.txHash,
+      detail: result.detail,
+      realisedUsd: result.realisedUsd
+    }
+  )
 
   await lessons.remember(
     result.ok ? 'episodic' : 'procedural',
@@ -191,13 +198,20 @@ async function executeApproved(
 }
 
 /**
- * Swaps always simulate: testnets have no real liquidity, and quoting one thing
- * while doing another is exactly the kind of gap the audit log exists to close.
+ * Indicative swaps simulate. A live swap is only the explicitly marked
+ * Jupiter/Solana path, and it rebuilds the order immediately before signing.
  * Transfers broadcast for real on whichever network is selected.
  */
 async function runAction(record: ActionRecord): Promise<ExecutionResult> {
   const network = findNetwork(record.action.networkId)
-  const base = { simulated: true, txHash: null, explorerUrl: null, realisedUsd: 0, at: Date.now() }
+  const isLiveSwap = record.action.kind === 'swap' && record.action.execution === 'live'
+  const base = {
+    simulated: !isLiveSwap,
+    txHash: null,
+    explorerUrl: null,
+    realisedUsd: 0,
+    at: Date.now()
+  }
 
   if (!network) {
     return { ...base, ok: false, detail: `Unknown network "${record.action.networkId}".` }
@@ -210,6 +224,31 @@ async function runAction(record: ActionRecord): Promise<ExecutionResult> {
   try {
     if (record.action.kind === 'swap') {
       const { sellSymbol, buySymbol, sellAmount, expectedBuyAmount } = record.action
+      if (record.action.execution === 'live') {
+        if (network.id !== 'sol-mainnet' || network.family !== 'solana') {
+          return { ...base, ok: false, detail: 'Live Jupiter swaps are restricted to Solana mainnet.' }
+        }
+        const apiKey = openSecret(state.current().jupiter.apiKeyCipher)
+        if (!apiKey) return { ...base, ok: false, detail: 'Jupiter API key is not configured.' }
+        const wallet = publicAddresses().solana
+        if (!wallet) return { ...base, ok: false, detail: 'Vault is locked.' }
+        const result = await jupiter.executeLiveSwap(apiKey, {
+          sellSymbol,
+          buySymbol,
+          sellAmount,
+          targetBuyAmount: record.action.targetBuyAmount,
+          slippageBps: record.action.slippageBps,
+          taker: wallet,
+          secretKey: requireSolanaKey().secretKey
+        })
+        return {
+          ...base,
+          ok: result.ok,
+          txHash: result.signature,
+          explorerUrl: result.signature ? `${network.explorerTxUrl}${result.signature}` : null,
+          detail: result.detail
+        }
+      }
       return {
         ...base,
         ok: true,
@@ -258,6 +297,7 @@ async function runAction(record: ActionRecord): Promise<ExecutionResult> {
     return { ...base, ok: false, detail: err instanceof Error ? err.message : String(err) }
   }
 }
+
 
 /** Clears the queue when the operator hits the kill switch. */
 export async function expireAllPending(reason: string): Promise<number> {

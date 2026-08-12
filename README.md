@@ -77,13 +77,19 @@ refuses it. Windows updates work unsigned, but SmartScreen warns users.
 
 ## Safety posture
 
+- **Indicative swaps execute as simulations.** Normal `propose_swap` quotes are
+  derived from spot prices rather than routed through a DEX and are labelled
+  `simulated`.
+- **Explicit SOL target buys can execute live through Jupiter v2.** `buy 1 SOL`
+  targets at least 1 SOL using USDC; it is limited to Solana mainnet, requires
+  a Jupiter key, an unlocked vault and enabled mainnet, and rebuilds the quote
+  immediately before signing. Restricted mode waits for approval; full mode
+  can execute after the gate allows it.
+
 - **Testnets by default.** Sepolia, Base Sepolia and Solana Devnet. Mainnet
   networks cannot even be *selected* until you enable real funds in Guardrails.
 - **Transfers broadcast for real** on whichever network is selected, after
   simulating first.
-- **Swaps always execute as a simulation.** Testnets have no real liquidity, so
-  quotes are derived from spot prices rather than routed through a DEX. Every
-  swap result is labelled `simulated` in the UI and the audit log.
 - **The transfer allowlist starts empty**, which means every transfer is refused
   until you deliberately add a destination.
 
@@ -121,7 +127,11 @@ Go to **Settings → Model provider** and set:
 
 Without a key the app still runs: a deterministic local planner answers
 read-only questions about balances, prices, quotes, guardrails and memory. It
-will not propose fund-moving actions, by design.
+will not propose fund-moving actions from free-form text, by design.
+
+The narrow direct command `buy <amount> SOL` is an exception to the model
+provider requirement, but it still requires a Jupiter key and every gate
+check. It is not a general-purpose pattern matcher for fund-moving text.
 
 ## Commands
 
@@ -149,6 +159,24 @@ Windows produces an NSIS installer and a portable `.exe` in `release/`. macOS
 produces a DMG for arm64 and x64. Neither is code-signed out of the box —
 add an Apple Developer ID or a Windows certificate to `electron-builder.yml`
 if you need signed builds.
+
+## Direct SOL buy
+
+After unlocking the vault, configure a Jupiter API key in **Settings → Jupiter
+live swaps**. Enable mainnet in **Guardrails**, select Solana Mainnet in
+**Wallet**, and choose the execution mode you want:
+
+```text
+buy 1 SOL
+buy 0.25 SOL on mainnet
+```
+
+The short form uses the active Solana network. A mainnet action can only pass
+when mainnet is explicitly enabled. `buy` is a target-output intent, but
+Jupiter v2 currently builds an ExactIn order, so VexDesk first estimates the
+USDC input and loops quotes until the minimum output reaches the target. It
+then fetches a fresh order before signing; if that fresh minimum misses the
+target, nothing is signed and the action fails closed.
 
 ## Where your data lives
 
@@ -193,7 +221,7 @@ to do things; signing authority never crosses the boundary.
 npm test
 ```
 
-98 tests covering the gate's refusal paths, keystore round-trips and tamper
+115 tests covering the gate's refusal paths, keystore round-trips and tamper
 detection, BIP-39/SLIP-0010 derivation against known vectors, secret redaction,
 memory decay, semantic recall and its lexical fallback, audit-chain integrity,
 conversation persistence, and an end-to-end run of the action pipeline from
@@ -205,6 +233,8 @@ proposal through gate to execution.
   anything you approve.
 - Swap quotes are indicative, not routed. Do not read a simulated swap as a
   fill.
+- Live target buys are currently limited to the SOL/USDC pair on Jupiter
+  mainnet and require deliberate mainnet configuration.
 - Losing your recovery phrase means losing the funds. There is no reset.
 
 ## Licence

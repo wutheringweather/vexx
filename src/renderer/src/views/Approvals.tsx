@@ -89,6 +89,9 @@ export default function Approvals(): React.JSX.Element {
 }
 
 function describe(action: ActionRecord): string {
+  if (action.action.kind === 'swap' && action.action.targetBuyAmount) {
+    return `Buy ${action.action.targetBuyAmount} ${action.action.buySymbol} with ${action.action.sellSymbol}`
+  }
   return action.action.kind === 'transfer'
     ? `Transfer ${action.action.amount} ${action.action.symbol} to ${action.action.to}`
     : `Swap ${action.action.sellAmount} ${action.action.sellSymbol} → ${action.action.buySymbol}`
@@ -126,12 +129,19 @@ function ActionCard({
           </div>
         </div>
 
-        {action.action.kind === 'swap' && (
-          <Callout tone="accent">
-            Swaps execute as a <strong>simulation</strong>. The quote is derived from spot prices,
-            not routed through a DEX, so no funds actually move and no liquidity is consumed.
-          </Callout>
-        )}
+        {action.action.kind === 'swap' &&
+          (action.action.execution === 'live' ? (
+            <Callout tone="danger">
+              This is a <strong>live Solana/Jupiter swap</strong>. The target output and route are
+              re-quoted immediately before signing. In full mode it can execute without this
+              approval pause; in restricted mode it waits here.
+            </Callout>
+          ) : (
+            <Callout tone="accent">
+              Swaps execute as a <strong>simulation</strong>. The quote is derived from spot prices,
+              not routed through a DEX, so no funds actually move and no liquidity is consumed.
+            </Callout>
+          ))}
 
         <div>
           <div className="field__label" style={{ marginBottom: 8 }}>

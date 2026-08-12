@@ -8,6 +8,7 @@ import type {
   BalanceInfo,
   EmbeddingProbeResult,
   ExecutionMode,
+  JupiterProbeResult,
   LlmProbeResult,
   Mission,
   Policy,
@@ -130,6 +131,11 @@ const api = {
       apiKey: string | null
     }) => call<boolean>('llm:update', input),
     probe: () => call<LlmProbeResult>('llm:probe')
+  },
+
+  jupiter: {
+    updateApiKey: (apiKey: string | null) => call<boolean>('jupiter:update', { apiKey }),
+    probe: () => call<JupiterProbeResult>('jupiter:probe')
   },
 
   audit: {

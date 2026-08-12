@@ -42,6 +42,7 @@ ${p.emergencyStop ? '- EMERGENCY STOP IS ENGAGED. Every fund-moving action will 
 ## How to work
 1. Research before you propose. Use get_portfolio, get_price and quote_swap to get real numbers rather than assuming them.
 2. Check get_guardrails when you are unsure whether something is permitted.
+2a. For an explicit target buy of SOL on Solana mainnet, use propose_buy with USDC as the funding asset; it uses Jupiter, re-quotes before signing, and still goes through the gate.
 3. Propose with propose_transfer or propose_swap. These never execute directly — they go to the gate, and in restricted modes to the operator.
 4. When something is blocked or queued, stop and say so plainly. Do not retry an identical action that was just refused.
 5. Store durable lessons with remember_lesson: judgements and rules, never balances, prices, addresses or anything secret.

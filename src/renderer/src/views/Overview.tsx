@@ -174,7 +174,12 @@ export default function Overview(): React.JSX.Element {
               <div className="row" key={action.id}>
                 <div className="row__main">
                   <div className="row__title">
-                    {action.action.kind === 'transfer'
+                    {action.action.kind === 'swap' && action.action.targetBuyAmount
+                      ? `Buy ${action.action.targetBuyAmount} ${action.action.buySymbol}`
+                      : null}
+                    {action.action.kind === 'swap' && action.action.targetBuyAmount
+                      ? null
+                      : action.action.kind === 'transfer'
                       ? `Transfer ${action.action.amount} ${action.action.symbol}`
                       : `Swap ${action.action.sellAmount} ${action.action.sellSymbol} → ${action.action.buySymbol}`}
                   </div>
@@ -201,7 +206,7 @@ export function StatusTag({ status }: { status: string }): React.JSX.Element {
       ? 'success'
       : status === 'blocked' || status === 'failed'
         ? 'danger'
-        : status === 'pending'
+        : status === 'pending' || status === 'simulated'
           ? 'accent'
           : undefined
   return <Tag tone={tone as 'success' | 'danger' | 'accent' | undefined}>{status}</Tag>

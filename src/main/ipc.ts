@@ -15,6 +15,7 @@ import * as keystore from './vault/keystore'
 import * as evm from './chains/evm'
 import * as solana from './chains/solana'
 import * as market from './chains/market'
+import * as jupiter from './chains/jupiter'
 import * as actions from './agent/actions'
 import * as mission from './agent/mission'
 import * as conversations from './agent/conversations'
@@ -86,6 +87,9 @@ async function snapshot(): Promise<AppSnapshot> {
       temperature: s.llm.temperature,
       maxTokens: s.llm.maxTokens
     },
+    jupiter: {
+      hasApiKey: Boolean(openSecret(s.jupiter.apiKeyCipher))
+    },
     memory: {
       embeddingsEnabled: s.memory.embeddingsEnabled,
       embeddingModel: s.memory.embeddingModel,
@@ -153,6 +157,11 @@ const llmSchema = z.object({
   model: z.string().min(1).max(120),
   temperature: z.number().min(0).max(2),
   maxTokens: z.number().int().min(64).max(32000),
+  /** null leaves the stored key alone; '' clears it. */
+  apiKey: z.string().max(400).nullable()
+})
+
+const jupiterSchema = z.object({
   /** null leaves the stored key alone; '' clears it. */
   apiKey: z.string().max(400).nullable()
 })
@@ -459,6 +468,32 @@ export function registerHandlers(): void {
   })
 
   handle('llm:probe', async () => probe(llmConfig()))
+
+  // --- Jupiter live SOL execution ----------------------------------------
+
+  handle('jupiter:update', async (payload) => {
+    const input = jupiterSchema.parse(payload)
+    await state.update((draft) => {
+      if (input.apiKey !== null) {
+        draft.jupiter.apiKeyCipher = input.apiKey === '' ? null : seal(input.apiKey)
+      }
+    })
+    await audit.record('system', 'Jupiter settings updated', {
+      keyChanged: input.apiKey !== null,
+      configured: Boolean(openSecret(state.current().jupiter.apiKeyCipher))
+    })
+    await pushSnapshot()
+    return true
+  })
+
+  handle('jupiter:probe', async () => {
+    const s = state.current()
+    const apiKey = openSecret(s.jupiter.apiKeyCipher)
+    if (!apiKey) return { ok: false, latencyMs: 0, detail: 'Jupiter API key is not configured.' }
+    const vault = await keystore.status()
+    const solanaAddress = vault.accounts.find((account) => account.family === 'solana')?.address ?? null
+    return jupiter.probe(apiKey, solanaAddress)
+  })
 
   // --- Semantic memory -----------------------------------------------------
 

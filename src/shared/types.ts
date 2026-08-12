@@ -159,6 +159,10 @@ export interface SwapAction {
   sellSymbol: string
   buySymbol: string
   sellAmount: string
+  /** Simulation is the safe default; live is only valid for the Jupiter Solana path. */
+  execution?: 'simulation' | 'live'
+  /** Set for a natural-language target such as "buy 1 SOL". */
+  targetBuyAmount?: string
   /** Best-effort quote; the gate compares this against maxSlippageBps. */
   expectedBuyAmount: string
   slippageBps: number
@@ -172,6 +176,7 @@ export type ActionStatus =
   | 'approved'
   | 'rejected'
   | 'blocked'
+  | 'simulated'
   | 'executed'
   | 'failed'
   | 'expired'
@@ -330,6 +335,17 @@ export interface LlmProbeResult {
   detail: string
 }
 
+export interface JupiterSettings {
+  /** The key itself never crosses into the renderer. */
+  hasApiKey: boolean
+}
+
+export interface JupiterProbeResult {
+  ok: boolean
+  latencyMs: number
+  detail: string
+}
+
 export interface MemorySettings {
   /** When false, recall is lexical and nothing about memory leaves the machine. */
   embeddingsEnabled: boolean
@@ -388,6 +404,7 @@ export interface AppSnapshot {
   missions: Mission[]
   lessons: Lesson[]
   llm: LlmSettings
+  jupiter: JupiterSettings
   memory: MemorySettings
   update: UpdateStatus
   version: string

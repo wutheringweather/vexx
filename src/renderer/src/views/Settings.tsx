@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { EmbeddingProbeResult, LlmProbeResult } from '@shared/types'
+import type { EmbeddingProbeResult, JupiterProbeResult, LlmProbeResult } from '@shared/types'
 import { api } from '../lib/api'
 import { useSnapshot, useStore } from '../lib/store'
 import { Callout, Card, Field, Modal, Switch, Tag } from '../components/ui'
@@ -15,6 +15,8 @@ export default function Settings(): React.JSX.Element {
   const [maxTokens, setMaxTokens] = useState(snapshot.llm.maxTokens)
   const [apiKey, setApiKey] = useState('')
   const [probe, setProbe] = useState<LlmProbeResult | null>(null)
+  const [jupiterApiKey, setJupiterApiKey] = useState('')
+  const [jupiterProbe, setJupiterProbe] = useState<JupiterProbeResult | null>(null)
   const [busy, setBusy] = useState(false)
 
   const [embeddingModel, setEmbeddingModel] = useState(snapshot.memory.embeddingModel)
@@ -58,6 +60,26 @@ export default function Settings(): React.JSX.Element {
     setBusy(false)
     if (result) {
       setProbe(result)
+      notify(result.ok ? 'success' : 'error', result.ok ? `Responded in ${result.latencyMs} ms.` : result.detail)
+    }
+  }
+
+  async function saveJupiter(): Promise<void> {
+    setBusy(true)
+    const saved = await run(
+      () => api.jupiter.updateApiKey(jupiterApiKey.length > 0 ? jupiterApiKey : null),
+      'Jupiter settings saved.'
+    )
+    setBusy(false)
+    if (saved) setJupiterApiKey('')
+  }
+
+  async function testJupiter(): Promise<void> {
+    setBusy(true)
+    const result = await run(() => api.jupiter.probe())
+    setBusy(false)
+    if (result) {
+      setJupiterProbe(result)
       notify(result.ok ? 'success' : 'error', result.ok ? `Responded in ${result.latencyMs} ms.` : result.detail)
     }
   }
@@ -152,6 +174,62 @@ export default function Settings(): React.JSX.Element {
               </button>
             )}
             <button className="btn btn--primary" disabled={busy} onClick={() => void saveProvider()}>
+              <IconCheck size={15} /> {busy ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      <Card
+        title="Jupiter live swaps"
+        description="Required for a real SOL buy from a direct command; simulation and testnet remain safe defaults."
+        actions={
+          snapshot.jupiter.hasApiKey ? <Tag tone="success">key stored</Tag> : <Tag tone="accent">no key</Tag>
+        }
+      >
+        <div className="stack">
+          <Callout tone="accent">
+            Live execution uses Jupiter v2 on Solana mainnet. The command <code>buy 1 SOL</code>{' '}
+            treats the amount as a target output, funds it with USDC, quotes again immediately
+            before signing, and still follows the active mode and Guardrails.
+          </Callout>
+          <Field
+            label="Jupiter API key"
+            hint={
+              snapshot.jupiter.hasApiKey
+                ? 'A key is already stored. Leave this blank to keep it, or type a new one to replace it.'
+                : 'Stored via the OS keychain. It is never returned to the renderer or written to the audit log.'
+            }
+          >
+            <input
+              className="input input--mono"
+              type="password"
+              value={jupiterApiKey}
+              placeholder={snapshot.jupiter.hasApiKey ? '••••••••••••••••' : 'Jupiter key'}
+              onChange={(e) => setJupiterApiKey(e.target.value)}
+            />
+          </Field>
+          {jupiterProbe && (
+            <Callout tone={jupiterProbe.ok ? 'success' : 'danger'}>
+              <strong>{jupiterProbe.ok ? 'Jupiter reachable' : 'Jupiter failed'}</strong> — {jupiterProbe.detail}
+              {jupiterProbe.ok ? ` (${jupiterProbe.latencyMs} ms)` : ''}
+            </Callout>
+          )}
+          <div className="inline">
+            <button className="btn" disabled={busy || !snapshot.jupiter.hasApiKey} onClick={() => void testJupiter()}>
+              Test connection
+            </button>
+            <span className="spacer" />
+            {snapshot.jupiter.hasApiKey && (
+              <button
+                className="btn btn--danger"
+                disabled={busy}
+                onClick={() => void run(() => api.jupiter.updateApiKey(''), 'Jupiter key removed.')}
+              >
+                Remove key
+              </button>
+            )}
+            <button className="btn btn--primary" disabled={busy} onClick={() => void saveJupiter()}>
               <IconCheck size={15} /> {busy ? 'Saving…' : 'Save'}
             </button>
           </div>

@@ -10,6 +10,7 @@ import { complete, LlmUnavailableError, type LlmConfig, type LlmMessage } from '
 import { dispatch, toolDefinitions } from './tools'
 import { systemPrompt } from './prompt'
 import * as fallback from './fallback'
+import { parseDirectBuyCommand } from './commands'
 
 /** Bounds one turn so a looping model cannot spend the operator's credits forever. */
 const MAX_TOOL_ROUNDS = 6
@@ -49,6 +50,43 @@ export async function runTurn(
   missionObjective?: string
 ): Promise<TurnResult> {
   const s = await state.load()
+
+  const directBuy = parseDirectBuyCommand(userMessage)
+  if (directBuy) {
+    const result = await dispatch(
+      'propose_buy',
+      {
+        networkId: directBuy.networkId ?? s.activeSolanaNetworkId,
+        buySymbol: directBuy.buySymbol,
+        buyAmount: directBuy.buyAmount,
+        sellSymbol: directBuy.sellSymbol,
+        rationale: `Direct command: ${userMessage.trim()}`
+      },
+      { missionId }
+    )
+    await audit.record('agent', 'Direct buy command processed', {
+      command: userMessage,
+      actionId: result.actionId ?? null,
+      summary: result.summary
+    })
+    const toolMessage: ChatMessage = {
+      id: newId('msg'),
+      role: 'tool',
+      content: result.summary,
+      at: Date.now(),
+      toolName: 'propose_buy',
+      ...(result.actionId ? { actionId: result.actionId } : {}),
+      offline: !hasProvider()
+    }
+    const assistantMessage: ChatMessage = {
+      id: newId('msg'),
+      role: 'assistant',
+      content: result.summary,
+      at: Date.now(),
+      offline: !hasProvider()
+    }
+    return { messages: [assistantMessage, toolMessage], actionIds: result.actionId ? [result.actionId] : [] }
+  }
 
   if (!hasProvider()) {
     const reply = await fallback.respond(userMessage)

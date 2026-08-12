@@ -5,10 +5,12 @@ import type { LlmToolDef } from './llm'
 import * as market from '../chains/market'
 import * as evm from '../chains/evm'
 import * as solana from '../chains/solana'
+import * as jupiter from '../chains/jupiter'
 import * as lessons from '../memory/lessons'
 import * as state from '../state'
 import { publicAddresses } from '../vault/keystore'
 import { propose } from './actions'
+import { open as openSecret } from '../storage/secret-store'
 
 export interface ToolResult {
   summary: string
@@ -213,6 +215,7 @@ const proposeSwap = def({
       sellSymbol: quote.sellSymbol,
       buySymbol: quote.buySymbol,
       sellAmount: quote.sellAmount,
+      execution: 'simulation',
       expectedBuyAmount: quote.expectedBuyAmount,
       slippageBps: quote.slippageBps,
       estimatedUsd: quote.notionalUsd
@@ -226,6 +229,63 @@ const proposeSwap = def({
   }
 })
 
+const proposeBuy = def({
+  name: 'propose_buy',
+  description:
+    'Propose a live Jupiter buy target on Solana mainnet. The quote uses USDC by default, is re-quoted immediately before signing, and still passes through the safety gate.',
+  schema: z.object({
+    networkId: z.string().min(1),
+    buySymbol: z.literal('SOL'),
+    buyAmount: z.string().min(1),
+    sellSymbol: z.literal('USDC'),
+    rationale: z.string().min(4).max(500)
+  }),
+  movesFunds: true,
+  async run({ networkId, buySymbol, buyAmount, sellSymbol, rationale }, ctx) {
+    if (networkId !== 'sol-mainnet') {
+      throw new Error('Live target buys require Solana mainnet. Select it and enable mainnet in Guardrails first.')
+    }
+    const apiKey = openSecret(state.current().jupiter.apiKeyCipher)
+    if (!apiKey) throw new Error('Jupiter API key is not configured. Add it in Settings first.')
+    const wallet = publicAddresses().solana
+    if (!wallet) throw new Error('Unlock the vault before requesting a live buy quote.')
+    const s = state.current()
+    const quote = await jupiter.quoteTargetBuy(apiKey, {
+      sellSymbol,
+      buySymbol,
+      targetBuyAmount: buyAmount,
+      slippageBps: s.policy.maxSlippageBps,
+      taker: wallet
+    })
+    const action: ProposedAction = {
+      kind: 'swap',
+      networkId,
+      sellSymbol: quote.sellSymbol,
+      buySymbol: quote.buySymbol,
+      sellAmount: quote.sellAmount,
+      targetBuyAmount: quote.targetBuyAmount,
+      execution: 'live',
+      expectedBuyAmount: quote.expectedBuyAmount,
+      slippageBps: quote.slippageBps,
+      estimatedUsd: quote.notionalUsd
+    }
+    const record = await propose(action, rationale, ctx.missionId)
+    return {
+      summary:
+        `${describeOutcome(record.status, record.verdict.reason)} Target ${buyAmount} ${buySymbol} using approximately ${quote.sellAmount} ${sellSymbol}. Jupiter will re-quote before signing.`,
+      data: {
+        actionId: record.id,
+        status: record.status,
+        decision: record.verdict.decision,
+        targetBuyAmount: buyAmount,
+        estimatedSellAmount: quote.sellAmount,
+        expectedBuyAmount: quote.expectedBuyAmount
+      },
+      actionId: record.id
+    }
+  }
+})
+
 function describeOutcome(status: string, reason: string | null): string {
   switch (status) {
     case 'blocked':
@@ -234,6 +294,8 @@ function describeOutcome(status: string, reason: string | null): string {
       return 'Queued for human approval. Stop here and tell the operator what you are waiting on.'
     case 'executed':
       return 'Executed. Report the outcome.'
+    case 'simulated':
+      return 'Simulation complete. No funds moved and no transaction was broadcast.'
     case 'failed':
       return 'Execution failed. Report why, and do not blindly retry.'
     default:
@@ -253,7 +315,8 @@ const REGISTRY: ToolSpec<z.ZodTypeAny>[] = [
   recallMemory,
   rememberLesson,
   proposeTransfer,
-  proposeSwap
+  proposeSwap,
+  proposeBuy
 ]
 
 export const TOOL_NAMES = REGISTRY.map((t) => t.name)

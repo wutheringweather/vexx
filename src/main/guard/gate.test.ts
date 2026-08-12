@@ -36,12 +36,49 @@ const swap = (over: Partial<Extract<ProposedAction, { kind: 'swap' }>> = {}): Pr
   ...over
 })
 
+const liveBuy = (over: Partial<Extract<ProposedAction, { kind: 'swap' }>> = {}): ProposedAction =>
+  swap({
+    networkId: 'sol-mainnet',
+    sellSymbol: 'USDC',
+    buySymbol: 'SOL',
+    sellAmount: '1',
+    expectedBuyAmount: '0.006',
+    execution: 'live',
+    targetBuyAmount: '0.005',
+    estimatedUsd: 1,
+    ...over
+  })
+
 describe('safety gate', () => {
   it('allows a compliant swap in a full-autonomy mode', () => {
     const verdict = evaluate(swap(), ctx())
     expect(verdict.decision).toBe('allow')
     expect(verdict.reason).toBeNull()
     expect(verdict.checks.every((c) => c.passed)).toBe(true)
+  })
+
+  it('blocks a live swap without a configured Jupiter provider', () => {
+    const verdict = evaluate(liveBuy(), ctx({ liveExecutionReady: false }, { mainnetEnabled: true }))
+    expect(verdict.decision).toBe('block')
+    expect(verdict.reason).toContain('Jupiter')
+  })
+
+  it('blocks a live swap on devnet even when a provider exists', () => {
+    const verdict = evaluate(
+      liveBuy({ networkId: 'sol-devnet' }),
+      ctx({ liveExecutionReady: true }, { mainnetEnabled: true })
+    )
+    expect(verdict.decision).toBe('block')
+    expect(verdict.reason).toContain('Solana mainnet')
+  })
+
+  it('allows a configured live swap only after mainnet is explicitly enabled', () => {
+    expect(
+      evaluate(liveBuy(), ctx({ liveExecutionReady: true }, { mainnetEnabled: true })).decision
+    ).toBe('allow')
+    expect(
+      evaluate(liveBuy(), ctx({ liveExecutionReady: true }, { mainnetEnabled: false })).decision
+    ).toBe('block')
   })
 
   it('requires approval for the same swap in a restricted mode', () => {

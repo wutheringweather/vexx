@@ -246,6 +246,7 @@ function snapshot(): AppSnapshot {
       temperature: 0.3,
       maxTokens: 1200
     },
+    jupiter: { hasApiKey: false },
     memory: {
       embeddingsEnabled: false,
       embeddingModel: DEFAULT_EMBEDDING_MODEL,
@@ -368,6 +369,10 @@ export function createDevPreviewApi(): VexApi {
     llm: {
       update: async () => true,
       probe: async () => ({ ok: false, model: current.llm.model, latencyMs: 0, detail: 'Preview mode.' })
+    },
+    jupiter: {
+      updateApiKey: async () => true,
+      probe: async () => ({ ok: false, latencyMs: 0, detail: 'Preview mode.' })
     },
     audit: {
       list: async () => [

@@ -33,6 +33,10 @@ export interface PersistedState {
     /** Encrypted with a machine-bound key, not with the master password. */
     apiKeyCipher: string | null
   }
+  jupiter: {
+    /** Encrypted with the OS keychain, never with the vault password. */
+    apiKeyCipher: string | null
+  }
   memory: {
     /**
      * Off by default. Turning it on sends lesson text to the provider to be
@@ -60,6 +64,9 @@ function defaults(): PersistedState {
       maxTokens: 1200,
       apiKeyCipher: null
     },
+    jupiter: {
+      apiKeyCipher: null
+    },
     memory: {
       embeddingsEnabled: false,
       embeddingModel: DEFAULT_EMBEDDING_MODEL
@@ -80,6 +87,7 @@ export async function load(): Promise<PersistedState> {
           ...loaded,
           policy: { ...DEFAULT_POLICY, ...loaded.policy },
           llm: { ...defaults().llm, ...loaded.llm },
+          jupiter: { ...defaults().jupiter, ...loaded.jupiter },
           memory: { ...defaults().memory, ...loaded.memory }
         }
       : defaults()

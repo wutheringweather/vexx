@@ -128,7 +128,7 @@ describe('action pipeline', () => {
       'test: full autonomy skips the human, not the gate'
     )
 
-    expect(record.status).toBe('executed')
+    expect(record.status).toBe('simulated')
     expect(record.execution?.simulated).toBe(true)
     expect(record.execution?.txHash).toBeNull()
   })

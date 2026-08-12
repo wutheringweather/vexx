@@ -16,6 +16,8 @@ export interface GateContext {
   missionRealisedUsd: number
   /** True when the vault is unlocked and could actually sign. */
   vaultUnlocked: boolean
+  /** True only when the live swap provider is configured in the main process. */
+  liveExecutionReady?: boolean
 }
 
 function check(id: string, label: string, passed: boolean, detail: string): GateCheck {
@@ -202,6 +204,32 @@ export function evaluate(action: ProposedAction, ctx: GateContext): GateVerdict 
           Number.isFinite(expected) && expected > 0
             ? `Expecting ${action.expectedBuyAmount} ${action.buySymbol}.`
             : 'No usable quote for the buy leg.'
+        )
+      )
+
+      const live = action.execution === 'live'
+      checks.push(
+        check(
+          'live-swap-network',
+          'Live swaps use Solana mainnet',
+          !live || action.networkId === 'sol-mainnet',
+          !live
+            ? 'Simulation mode.'
+            : action.networkId === 'sol-mainnet'
+              ? 'Live Jupiter execution is restricted to Solana mainnet.'
+              : 'Live Jupiter execution is not available on testnet.'
+        )
+      )
+      checks.push(
+        check(
+          'live-swap-provider',
+          'Live swap provider configured',
+          !live || ctx.liveExecutionReady === true,
+          !live
+            ? 'Simulation mode.'
+            : ctx.liveExecutionReady
+              ? 'Jupiter API key is configured.'
+              : 'Jupiter API key is missing.'
         )
       )
     }
