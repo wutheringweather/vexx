@@ -1,6 +1,6 @@
 {
   "name": "vexdesk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "VexDesk — a self-custodial desktop crypto agent with fail-closed guardrails",
   "main": "./out/main/index.js",
   "author": "OrdersMDC",
