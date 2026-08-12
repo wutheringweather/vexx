@@ -367,7 +367,17 @@ export function createDevPreviewApi(): VexApi {
       clear: async () => true
     },
     llm: {
-      update: async () => true,
+      // The snapshot is a single frozen object, so without recording the key
+      // here the access-key gate would re-render forever and the browser design
+      // preview could never reach any screen behind it.
+      update: async (config) => {
+        current.llm.baseUrl = config.baseUrl
+        current.llm.model = config.model
+        current.llm.temperature = config.temperature
+        current.llm.maxTokens = config.maxTokens
+        if (config.apiKey != null) current.llm.hasApiKey = config.apiKey.length > 0
+        return true
+      },
       probe: async () => ({ ok: false, model: current.llm.model, latencyMs: 0, detail: 'Preview mode.' })
     },
     jupiter: {

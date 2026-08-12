@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { EmbeddingProbeResult, JupiterProbeResult, LlmProbeResult } from '@shared/types'
+import { DEFAULT_LLM_BASE_URL } from '@shared/constants'
 import { api } from '../lib/api'
 import { useSnapshot, useStore } from '../lib/store'
 import { Callout, Card, Field, Modal, Switch, Tag } from '../components/ui'
@@ -114,6 +115,42 @@ export default function Settings(): React.JSX.Element {
               onChange={(e) => setApiKey(e.target.value)}
             />
           </Field>
+
+          {/* Bring your own key. Leaving these at the shipped values routes
+              through the VexDesk endpoint; changing them sends your traffic
+              straight to whatever provider you name, with your own key. */}
+          <div className="grid grid--2">
+            <Field
+              label="Endpoint"
+              hint={
+                baseUrl === DEFAULT_LLM_BASE_URL
+                  ? 'The VexDesk endpoint. Point this anywhere OpenAI-compatible to use your own provider instead.'
+                  : 'Custom provider. Your key above is sent to this endpoint, not to VexDesk.'
+              }
+            >
+              <input
+                className="input input--mono"
+                value={baseUrl}
+                spellCheck={false}
+                onChange={(e) => setBaseUrl(e.target.value)}
+              />
+            </Field>
+            <Field label="Model">
+              <input
+                className="input input--mono"
+                value={model}
+                spellCheck={false}
+                onChange={(e) => setModel(e.target.value)}
+              />
+            </Field>
+          </div>
+
+          {baseUrl !== DEFAULT_LLM_BASE_URL && (
+            <Callout>
+              Using your own provider. VexDesk never sees these requests. Wallet addresses are
+              stripped from every prompt either way.
+            </Callout>
+          )}
 
           <div className="grid grid--2">
             <Field label="Temperature" hint="Lower is steadier. 0.3 is a sensible default here.">

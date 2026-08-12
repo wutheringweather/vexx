@@ -126,7 +126,20 @@ export const DEFAULT_POLICY: Policy = {
   emergencyStop: false
 }
 
-/** OpenAI-compatible endpoint. MegaLLM by default. */
+/**
+ * The hosted endpoint VexDesk runs. It keeps the provider credential on the
+ * server and meters usage per access key, so no provider key ever ships inside
+ * a build where it could be extracted.
+ *
+ * Deliberately not the default yet: pointing new installs at an endpoint that
+ * is not answering would leave them with an assistant that quietly falls back
+ * to the local planner and no way to tell why. Once it serves
+ * /chat/completions in production, make this the value of
+ * DEFAULT_LLM_BASE_URL below — that is the entire switch.
+ */
+export const VEXDESK_HOSTED_BASE_URL = 'https://api.vexdesktop.xyz/v1'
+
+/** OpenAI-compatible endpoint. Anything speaking that dialect works here. */
 export const DEFAULT_LLM_BASE_URL = 'https://ai.megallm.io/v1'
 export const DEFAULT_LLM_MODEL = 'openai-gpt-oss-120b'
 

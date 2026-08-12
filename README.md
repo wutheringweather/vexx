@@ -52,10 +52,10 @@ Feature parity, honestly:
 
 ### Semantic memory is opt-in, deliberately
 
-Embedding a lesson means sending its text to your provider. That is the only
-path in VexDesk where local data leaves the machine, so it is **off by
-default**. With it off, recall matches on shared words and nothing is
-transmitted. Turning it on in Settings backfills vectors for lessons you
+Embedding a lesson means sending its text to your provider. Unlike a chat turn,
+that happens without you asking for it — a lesson gets embedded when it is
+written, not when you speak — so it is **off by default**. With it off, recall
+matches on shared words and nothing extra is transmitted. Turning it on in Settings backfills vectors for lessons you
 already have; text is redacted before it is sent, and a provider failure
 degrades to lexical recall rather than losing the lesson.
 
@@ -119,8 +119,39 @@ phrase is shown exactly once and cannot be recovered.
 
 Paste the access key when the app first opens. It is stored through the
 operating-system keychain (DPAPI on Windows, Keychain on macOS). The key is not
-shown again or written to the audit log. The service endpoint and model are
-part of the desktop runtime; there is no custom provider setup in the UI.
+shown again or written to the audit log.
+
+The key is a **VexDesk** key, not a provider key. It is metered per user and can
+be revoked, and the real provider credential lives only on the server behind
+`api.vexdesktop.xyz` — see [`proxy/`](proxy/). Nothing shipped in an installer
+can be a secret, so no provider key is shipped in one.
+
+### Or bring your own
+
+**Settings → AI access** exposes the endpoint and model. Point them at anything
+that speaks the OpenAI chat-completions dialect, add your own key, and your
+traffic goes straight there — VexDesk never sees it. The desktop app is
+provider-agnostic and always was; the hosted endpoint is a default, not a
+requirement.
+
+### What is sent, and what is not
+
+Wallet addresses are stripped from everything the model sees, on both routes:
+
+- The system prompt states whether the vault is unlocked, never which addresses
+  it holds.
+- Transfer destinations appear as aliases — `allowlist:1` — which privileged
+  code resolves to the real address after the model has spoken and before the
+  gate judges it.
+- Tool output is address-masked on the way back into the conversation, so a
+  balance lookup does not leak the account it belongs to.
+
+The agent never needs an address: signing happens in main, against the vault,
+whatever the model believes. `src/main/agent/privacy.test.ts` pins this down,
+including a test that the assembled system prompt contains no address at all.
+
+What *does* leave the machine is the conversation itself — your questions, the
+agent's reasoning, and tool results with the addresses masked out.
 
 The narrow direct command `buy <amount> SOL` is an exception to the model
 provider requirement, but it still requires a Jupiter key and every gate

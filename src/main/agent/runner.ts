@@ -3,11 +3,12 @@ import { newId } from '../storage/files'
 import * as state from '../state'
 import * as audit from '../audit/log'
 import * as lessons from '../memory/lessons'
-import { publicAddresses } from '../vault/keystore'
+import { isUnlocked } from '../vault/keystore'
 import { open as openSecret } from '../storage/secret-store'
 import { redact } from '../memory/redact'
 import { complete, LlmUnavailableError, type LlmConfig, type LlmMessage } from './llm'
 import { dispatch, toolDefinitions } from './tools'
+import { maskAddresses } from './privacy'
 import { systemPrompt } from './prompt'
 import * as fallback from './fallback'
 import { parseDirectBuyCommand } from './commands'
@@ -102,7 +103,7 @@ export async function runTurn(
         policy: s.policy,
         evmNetworkId: s.activeEvmNetworkId,
         solanaNetworkId: s.activeSolanaNetworkId,
-        addresses: publicAddresses(),
+        vaultUnlocked: isUnlocked(),
         lessons: recalled,
         missionObjective
       })
@@ -186,8 +187,12 @@ export async function runTurn(
         role: 'tool',
         tool_call_id: call.id,
         // Redact again on the way back into the prompt: tool output is the most
-        // likely place for an address or key to sneak into model context.
-        content: redact(JSON.stringify({ summary: result.summary, data: result.data })).slice(0, 4000)
+        // likely place for an address or key to sneak into model context. Masking
+        // runs first so addresses are shortened before the secret patterns look
+        // at what is left.
+        content: redact(
+          JSON.stringify(maskAddresses({ summary: result.summary, data: result.data }))
+        ).slice(0, 4000)
       })
     }
   }

@@ -9,6 +9,7 @@ import * as jupiter from '../chains/jupiter'
 import * as lessons from '../memory/lessons'
 import * as state from '../state'
 import { publicAddresses } from '../vault/keystore'
+import { describeTransferAllowlist, resolveTransferAlias } from './privacy'
 import { propose } from './actions'
 import { open as openSecret } from '../storage/secret-store'
 
@@ -122,8 +123,14 @@ const getGuardrails = def({
     const s = state.current()
     const p = s.policy
     return {
-      summary: `Mode ${s.mode}. Caps: $${p.maxNotionalUsdPerAction}/action, $${p.maxNotionalUsdPerMission}/mission, max loss $${p.maxLossUsd}, slippage ${p.maxSlippageBps} bps. Mainnet ${p.mainnetEnabled ? 'enabled' : 'disabled'}. Tokens: ${p.tokenAllowlist.join(', ') || 'none'}. Transfer destinations: ${p.transferAllowlist.length || 'none'}.`,
-      data: { policy: p, mode: s.mode, networks: NETWORKS.map((n) => n.id) }
+      summary: `Mode ${s.mode}. Caps: $${p.maxNotionalUsdPerAction}/action, $${p.maxNotionalUsdPerMission}/mission, max loss $${p.maxLossUsd}, slippage ${p.maxSlippageBps} bps. Mainnet ${p.mainnetEnabled ? 'enabled' : 'disabled'}. Tokens: ${p.tokenAllowlist.join(', ') || 'none'}. Transfer destinations: ${describeTransferAllowlist(p.transferAllowlist)}.`,
+      // The allowlist leaves as aliases, not addresses; everything else in the
+      // policy is a number or a flag and is safe to hand over as-is.
+      data: {
+        policy: { ...p, transferAllowlist: describeTransferAllowlist(p.transferAllowlist) },
+        mode: s.mode,
+        networks: NETWORKS.map((n) => n.id)
+      }
     }
   }
 })
@@ -168,7 +175,7 @@ const rememberLesson = def({
 const proposeTransfer = def({
   name: 'propose_transfer',
   description:
-    'Propose sending native tokens to an address. This does not execute: it is judged by the safety gate and, in restricted modes, queued for human approval.',
+    'Propose sending native tokens to a permitted destination. Pass the alias from the guardrails, such as "allowlist:1". This does not execute: it is judged by the safety gate and, in restricted modes, queued for human approval.',
   schema: z.object({
     networkId: z.string().min(1),
     to: z.string().min(1),
@@ -178,10 +185,13 @@ const proposeTransfer = def({
   }),
   movesFunds: true,
   async run({ networkId, to, amount, symbol, rationale }, ctx) {
+    // An alias becomes the real address here, in privileged code. An unknown one
+    // is left alone so the gate refuses it rather than this resolving it away.
+    const destination = resolveTransferAlias(to, state.current().policy.transferAllowlist)
     const action: ProposedAction = {
       kind: 'transfer',
       networkId,
-      to,
+      to: destination,
       amount,
       symbol: symbol.toUpperCase(),
       estimatedUsd: await market.toUsd(symbol, amount)

@@ -1,12 +1,19 @@
 import type { ExecutionMode, Lesson, Policy } from '@shared/types'
 import { EXECUTION_MODES, findNetwork } from '@shared/constants'
+import { describeTransferAllowlist } from './privacy'
 
+/**
+ * The prompt carries no wallet addresses. The agent does not need them —
+ * signing happens in main against the vault — and the provider on the other end
+ * of this prompt has no business learning who the operator is. Destinations
+ * appear as aliases the agent can quote and main resolves.
+ */
 export function systemPrompt(opts: {
   mode: ExecutionMode
   policy: Policy
   evmNetworkId: string
   solanaNetworkId: string
-  addresses: { evm: string | null; solana: string | null }
+  vaultUnlocked: boolean
   lessons: Lesson[]
   missionObjective?: string
 }): string {
@@ -25,8 +32,7 @@ export function systemPrompt(opts: {
 ## What you are working with
 - EVM network: ${evmNet?.label ?? opts.evmNetworkId} (${evmNet?.isMainnet ? 'MAINNET, real funds' : 'testnet'})
 - Solana network: ${solNet?.label ?? opts.solanaNetworkId} (${solNet?.isMainnet ? 'MAINNET, real funds' : 'testnet'})
-- EVM address: ${opts.addresses.evm ?? 'locked'}
-- Solana address: ${opts.addresses.solana ?? 'locked'}
+- Wallet: ${opts.vaultUnlocked ? 'unlocked and ready to sign' : 'locked — nothing can be signed'}. The addresses are held in the vault and are deliberately not shown to you; you never need one to call a tool.
 - Execution mode: ${modeInfo?.label ?? opts.mode} — ${modeInfo?.blurb ?? ''}
 
 ## Hard limits you cannot change
@@ -36,7 +42,7 @@ These are enforced by a safety gate in privileged code that you have no access t
 - Max slippage ${p.maxSlippageBps} bps
 - Mainnet is ${p.mainnetEnabled ? 'ENABLED' : 'DISABLED — any mainnet action will be refused'}
 - Tokens permitted: ${p.tokenAllowlist.join(', ') || 'none'}
-- Transfer destinations permitted: ${p.transferAllowlist.length > 0 ? p.transferAllowlist.join(', ') : 'none — every transfer will be refused'}
+- Transfer destinations permitted: ${describeTransferAllowlist(p.transferAllowlist)}. Pass the alias as \`to\` — for example \`allowlist:1\` — and it is resolved to the real address before the gate sees it.
 ${p.emergencyStop ? '- EMERGENCY STOP IS ENGAGED. Every fund-moving action will be refused.' : ''}
 
 ## How to work
