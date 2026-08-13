@@ -1,8 +1,12 @@
-# VexDesk
+# Remiora
 
 A self-custodial desktop crypto agent. Keys are generated and encrypted on your
 machine, an agent proposes on-chain actions, and a fail-closed safety gate sits
 between every proposal and every signature.
+
+> Formerly VexDesk. The rename is cosmetic so far — the installer, the local
+> data folder, the `VEXDESK_*` environment variables and the hosted endpoint
+> below all still use the old name until those get a deliberate migration.
 
 Built for **Windows and macOS**.
 
@@ -26,13 +30,13 @@ Built for **Windows and macOS**.
 
 ## Compared to Vex
 
-VexDesk is an independent implementation, written from scratch. `Vex-Foundation/Vex`
+Remiora is an independent implementation, written from scratch. `Vex-Foundation/Vex`
 is **source-available, not open-source** — its licence forbids forks and
 redistribution — so no code was taken from it.
 
 Feature parity, honestly:
 
-| Vex feature | VexDesk |
+| Vex feature | Remiora |
 |---|---|
 | EVM + Solana keys, local, AES-256-GCM + scrypt | Yes |
 | Master password in memory only | Yes |
@@ -117,10 +121,10 @@ phrase. The phrase is shown exactly once and cannot be recovered.
 
 ## Connecting the built-in assistant
 
-VexDesk is **bring-your-own-key**. On first launch you are asked for an
+Remiora is **bring-your-own-key**. On first launch you are asked for an
 endpoint, a model and your own API key; the endpoint can be anything speaking
 the OpenAI chat-completions dialect. Requests go straight from your machine to
-that endpoint. There is no VexDesk server in the middle, nothing is billed to
+that endpoint. There is no Remiora server in the middle, nothing is billed to
 us, and no provider credential ships inside the installer — anything that did
 could be pulled back out of it.
 
@@ -223,7 +227,7 @@ buy 0.25 SOL on mainnet
 
 The short form uses the active Solana network. A mainnet action can only pass
 when mainnet is explicitly enabled. `buy` is a target-output intent, but
-Jupiter v2 currently builds an ExactIn order, so VexDesk first estimates the
+Jupiter v2 currently builds an ExactIn order, so Remiora first estimates the
 USDC input and loops quotes until the minimum output reaches the target. It
 then fetches a fresh order before signing; if that fresh minimum misses the
 target, nothing is signed and the action fails closed.

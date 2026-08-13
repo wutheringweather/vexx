@@ -3,9 +3,51 @@ import { api } from '../lib/api'
 import { useStore } from '../lib/store'
 import { Callout, Field } from '../components/ui'
 import { IconCheck, IconCopy, IconLock } from '../lib/icons'
-import vxMark from '../assets/vx-mark.png'
+import vxMark from '../assets/vx-mark.svg'
 
 type Stage = 'choose' | 'create' | 'import' | 'reveal' | 'unlock'
+
+/** Plain lead-in, then the payoff clause in the brand's italic serif accent —
+ * same rhythm the marketing copy uses. Wording is unchanged from before;
+ * only the trailing clause is now marked up separately. */
+function gateSubtitle(stage: Stage): React.JSX.Element {
+  switch (stage) {
+    case 'unlock':
+      return (
+        <>
+          Your master password decrypts the keystore.{' '}
+          <em className="accent-serif">It is never written to disk.</em>
+        </>
+      )
+    case 'reveal':
+      return (
+        <>
+          This is the only time this phrase is shown.{' '}
+          <em className="accent-serif">Anyone holding it holds your funds.</em>
+        </>
+      )
+    case 'import':
+      return (
+        <>
+          Restore an existing BIP-39 wallet <em className="accent-serif">onto this machine.</em>
+        </>
+      )
+    case 'create':
+      return (
+        <>
+          Keys are generated locally and encrypted{' '}
+          <em className="accent-serif">with AES-256-GCM.</em>
+        </>
+      )
+    default:
+      return (
+        <>
+          A self-custodial crypto agent that runs{' '}
+          <em className="accent-serif">entirely on your machine.</em>
+        </>
+      )
+  }
+}
 
 export default function VaultGate(): React.JSX.Element {
   const { snapshot, run, notify, refresh } = useStore()
@@ -55,26 +97,16 @@ export default function VaultGate(): React.JSX.Element {
           <img className="gate-card__mark" src={vxMark} alt="" />
           <div className="gate-card__title">
             {stage === 'unlock'
-              ? 'Unlock VexDesk'
+              ? 'Unlock Remiora'
               : stage === 'reveal'
                 ? 'Write this down'
                 : stage === 'import'
                   ? 'Import a wallet'
                   : stage === 'create'
                     ? 'Create your vault'
-                    : 'Welcome to VexDesk'}
+                    : 'Welcome to Remiora'}
           </div>
-          <div className="gate-card__sub">
-            {stage === 'unlock'
-              ? 'Your master password decrypts the keystore. It is never written to disk.'
-              : stage === 'reveal'
-                ? 'This is the only time this phrase is shown. Anyone holding it holds your funds.'
-                : stage === 'import'
-                  ? 'Restore an existing BIP-39 wallet onto this machine.'
-                  : stage === 'create'
-                    ? 'Keys are generated locally and encrypted with AES-256-GCM.'
-                    : 'A self-custodial crypto agent that runs entirely on your machine.'}
-          </div>
+          <div className="gate-card__sub">{gateSubtitle(stage)}</div>
         </div>
 
         <div className="gate-card__body">
@@ -166,7 +198,7 @@ export default function VaultGate(): React.JSX.Element {
             <>
               <Callout tone="danger">
                 <strong>Write these words on paper.</strong> They are not stored anywhere in
-                readable form, and VexDesk cannot show them again or recover them for you.
+                readable form, and Remiora cannot show them again or recover them for you.
               </Callout>
 
               <div className="words">
@@ -211,7 +243,7 @@ export default function VaultGate(): React.JSX.Element {
                   void refresh()
                 }}
               >
-                <IconCheck size={15} /> Continue to VexDesk
+                <IconCheck size={15} /> Continue to Remiora
               </button>
             </>
           )}

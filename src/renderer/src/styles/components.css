@@ -1,5 +1,5 @@
 /* ==========================================================================
-   VexDesk — components
+   Remiora (VexDesk) — components
    ========================================================================== */
 
 /* --- Shell --------------------------------------------------------------- */
@@ -30,8 +30,8 @@
   -webkit-app-region: drag;
 }
 
-/* The mark carries its own gold tile and rounded corners baked in, so this
-   just sizes and places it — no background or text styling to double up. */
+/* The mark is a cream monogram on a transparent ground, so this just sizes
+   and places it — no background or text styling to double up. */
 .brand__mark {
   display: block;
   width: 26px;
@@ -605,6 +605,14 @@ kbd {
 
 .btn--block {
   width: 100%;
+}
+
+/* Reserved for the handful of marketing-adjacent CTAs (onboarding, gates) —
+   the brand's pill-shaped primary button. Not for dense in-app controls,
+   where a full pill next to a data table reads as decorative rather than
+   functional. */
+.btn--pill {
+  border-radius: var(--r-full);
 }
 
 /* --- Inputs -------------------------------------------------------------- */
@@ -1287,7 +1295,7 @@ kbd {
   overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--border-2);
-  border-radius: var(--r-xl);
+  border-radius: var(--r-2xl);
   box-shadow: var(--shadow-lg);
   z-index: var(--z-modal);
   animation: pop var(--t) var(--ease);
@@ -1324,7 +1332,7 @@ kbd {
   max-width: 540px;
   background: var(--surface);
   border: 1px solid var(--border-2);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   animation: pop var(--t) var(--ease);
@@ -1426,7 +1434,7 @@ kbd {
   max-width: 420px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-xl);
+  border-radius: var(--r-2xl);
   box-shadow: var(--shadow);
   overflow: hidden;
   animation: rise var(--t-slow) var(--ease);
@@ -1464,6 +1472,12 @@ kbd {
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
+}
+
+/* Onboarding is the one place the brand's full-pill button reads right —
+   a short, marketing-style CTA stack, not a dense instrument toolbar. */
+.gate-card__body .btn {
+  border-radius: var(--r-full);
 }
 
 /* --- Mnemonic ------------------------------------------------------------ */

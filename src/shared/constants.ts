@@ -1,6 +1,6 @@
 import type { ExecutionModeInfo, NetworkInfo, Policy } from './types'
 
-export const APP_NAME = 'VexDesk'
+export const APP_NAME = 'Remiora'
 
 /**
  * Testnets first, and deliberately so: a fresh install cannot touch real funds

@@ -179,7 +179,7 @@ export default function Wallet(): React.JSX.Element {
               The active networks above are the networks used for balances and direct commands.
               Live Jupiter buys work only on Solana Mainnet; switch back to Solana Devnet before
               testing without real funds. To fund the EVM testnet address, use a public Sepolia or
-              Base Sepolia faucet. VexDesk never asks anyone for funds on your behalf.
+              Base Sepolia faucet. Remiora never asks anyone for funds on your behalf.
             </Callout>
           </div>
         </Card>

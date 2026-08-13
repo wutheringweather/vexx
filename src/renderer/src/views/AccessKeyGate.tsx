@@ -4,7 +4,7 @@ import { api } from '../lib/api'
 import { useSnapshot, useStore } from '../lib/store'
 import { Callout, Field } from '../components/ui'
 import { IconCheck, IconLock } from '../lib/icons'
-import vxMark from '../assets/vx-mark.png'
+import vxMark from '../assets/vx-mark.svg'
 
 /**
  * First-launch provider setup.
@@ -57,8 +57,8 @@ export default function AccessKeyGate({ onSkip }: { onSkip: () => void }): React
           <img className="gate-card__mark" src={vxMark} alt="" />
           <div className="gate-card__title">Connect a model provider</div>
           <div className="gate-card__sub">
-            VexDesk uses your own key, with any OpenAI-compatible endpoint. Nothing is billed to us
-            and nothing routes through us.
+            Remiora uses your own key, with any OpenAI-compatible endpoint. Nothing is billed to us
+            and <em className="accent-serif">nothing routes through us.</em>
           </div>
         </div>
 

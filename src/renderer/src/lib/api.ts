@@ -15,11 +15,11 @@ function resolveApi(): VexApi {
   // so in a production bundle this branch and the whole dev-preview module are
   // dropped by tree-shaking. It can never serve fake data to a real user.
   if (import.meta.env.DEV) {
-    console.warn('[VexDesk] No preload bridge found — running the browser design preview.')
+    console.warn('[Remiora] No preload bridge found — running the browser design preview.')
     return createDevPreviewApi()
   }
 
-  throw new Error('The preload bridge is missing. VexDesk must run inside Electron.')
+  throw new Error('The preload bridge is missing. Remiora must run inside Electron.')
 }
 
 /** The only handle the UI has on anything privileged. */

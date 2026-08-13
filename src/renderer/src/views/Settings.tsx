@@ -141,7 +141,7 @@ export default function Settings(): React.JSX.Element {
           </div>
 
           <Callout>
-            Requests go straight from this machine to the endpoint above — VexDesk runs no server in
+            Requests go straight from this machine to the endpoint above — Remiora runs no server in
             the middle. Wallet addresses are stripped from every prompt before it is sent.
           </Callout>
 

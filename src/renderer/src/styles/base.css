@@ -1,13 +1,16 @@
 /* ==========================================================================
-   VexDesk — design tokens
+   Remiora (VexDesk) — design tokens
 
-   Direction: "instrument". This is an Operate surface, so scanability and
-   precision outrank expression. Brand lives in the details: one warm neutral
-   family, one accent that always means the same thing, and figures set in
-   tabular mono so numbers never jitter or mislead.
+   Direction: "instrument", skinned in the Remiora brand — near-black and one
+   warm cream, almost no other hue. This is still an Operate surface, so
+   scanability and precision outrank expression: the monochrome identity
+   lives in background, surface, border and type, while a small, deliberate
+   set of functional colours survives on top of it because this app moves
+   real money and those signals cannot be allowed to blend into body text.
+   Figures are set in tabular mono so numbers never jitter or mislead.
 
    Colour discipline:
-     accent (gold)  — human attention: focus, primary action, pending, caution
+     accent (cream) — the brand fill: primary action, focus, the one highlight
      success (jade) — a check passed, or money went up
      danger  (red)  — refused, failed, or money went down
    Nothing else gets a hue. If a colour appears, it carries one of those three
@@ -17,20 +20,29 @@
 :root {
   /* Optical sizing where the platform offers it: Windows 11 ships Segoe UI
      Variable with real Display/Text cuts, macOS ships SF Pro. Both beat a
-     generic system stack, and neither costs a network request under the CSP. */
+     generic system stack, and neither costs a network request under the CSP.
+     Almarai (the brand's marketing-site face) is geometric and rounded —
+     these are the closest offline-safe relatives. */
   --font-display: 'Segoe UI Variable Display', -apple-system, BlinkMacSystemFont,
     'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
   --font-text: 'Segoe UI Variable Text', -apple-system, BlinkMacSystemFont, 'SF Pro Text',
     'Segoe UI', system-ui, sans-serif;
   --font-mono: 'Cascadia Mono', ui-monospace, 'SF Mono', SFMono-Regular, 'JetBrains Mono',
     Consolas, monospace;
+  /* Brand accent face, standing in for Instrument Serif — used sparingly, in
+     italics, for the odd emphasised clause. Never for data. */
+  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman',
+    ui-serif, serif;
 
-  /* Radii vary by nesting depth — containers soften, inner controls stay tight. */
-  --r-xs: 4px;
-  --r-sm: 6px;
-  --r-md: 9px;
-  --r-lg: 13px;
-  --r-xl: 18px;
+  /* Radii vary by nesting depth — containers soften, inner controls stay
+     tight. Rounder across the board than a typical instrument panel: the
+     brand leans on generous, almost pill-like curvature. */
+  --r-xs: 5px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 26px;
+  --r-2xl: 34px;
   --r-full: 999px;
 
   --s-1: 4px;
@@ -66,91 +78,100 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  /* Warm near-black. Not #000 — pure black kills the shadows and reads cheap. */
-  --bg: #0c0b0a;
-  --bg-2: #100e0d;
+  /* True black, straight from the brand: rgb(0,0,0). The instrument reading
+     ("pure black kills the shadows") is traded away deliberately here so the
+     desk matches the marketing site exactly rather than just rhyming with it. */
+  --bg: #000000;
+  --bg-2: #0a0a0a;
 
-  --surface: #141311;
-  --surface-2: #1b1917;
-  --surface-3: #232019;
-  --surface-hover: #1e1b18;
+  --surface: #101010;
+  --surface-2: #161615;
+  --surface-3: #1f1e1c;
+  --surface-hover: #141312;
 
-  /* Hairlines carry the warm tint too, so nothing reads blue-grey. */
-  --border: rgba(255, 244, 226, 0.075);
-  --border-2: rgba(255, 244, 226, 0.14);
-  --border-3: rgba(255, 244, 226, 0.24);
+  /* Hairlines are cream at low opacity — never blue-grey. */
+  --border: rgba(225, 224, 204, 0.08);
+  --border-2: rgba(225, 224, 204, 0.14);
+  --border-3: rgba(225, 224, 204, 0.26);
 
-  --text: #f2ede4;
-  --text-2: #a8a096;
+  --text: #e1e0cc;
+  --text-2: rgba(225, 224, 204, 0.7);
   /* Secondary text carries real information (limits, timestamps, RPC errors),
      so it clears 4.5:1 against bg, surface and surface-2 alike — not just
      against the darkest one. */
-  --text-3: #8a8177;
+  --text-3: #837f70;
 
-  --accent: #d8a657;
-  --accent-hi: #e6b96f;
-  --accent-soft: rgba(216, 166, 87, 0.13);
-  --accent-line: rgba(216, 166, 87, 0.34);
-  --on-accent: #17120a;
+  /* The one brand colour: a warm cream fill, always paired with near-black
+     text on top of it. Kept a shade brighter than --text so a filled accent
+     still reads as "the brightest thing on the page", the way the primary
+     button does on the marketing site. */
+  --accent: #dedbc8;
+  --accent-hi: #f0eedd;
+  --accent-soft: rgba(222, 219, 200, 0.12);
+  --accent-line: rgba(222, 219, 200, 0.3);
+  --on-accent: #0a0a0a;
 
-  --success: #5fb98b;
-  --success-soft: rgba(95, 185, 139, 0.12);
-  --success-line: rgba(95, 185, 139, 0.3);
+  --success: #6fbf95;
+  --success-soft: rgba(111, 191, 149, 0.12);
+  --success-line: rgba(111, 191, 149, 0.3);
   --on-success: #06150d;
 
-  --danger: #e0645f;
-  --danger-soft: rgba(224, 100, 95, 0.12);
-  --danger-line: rgba(224, 100, 95, 0.32);
+  --danger: #e2665f;
+  --danger-soft: rgba(226, 102, 95, 0.12);
+  --danger-line: rgba(226, 102, 95, 0.32);
 
-  /* Shadows tinted to the background hue, never neutral black. */
-  --shadow-sm: 0 1px 2px rgba(12, 8, 3, 0.5);
-  --shadow: 0 10px 30px -12px rgba(10, 6, 2, 0.8);
-  --shadow-lg: 0 28px 70px -24px rgba(8, 5, 1, 0.9);
+  /* Shadows are neutral black now that the background is too. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.85);
+  --shadow-lg: 0 28px 70px -24px rgba(0, 0, 0, 0.92);
 
-  --grain-opacity: 0.032;
+  --grain-opacity: 0.035;
 }
 
 /* --- Light --------------------------------------------------------------- */
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --bg: #faf8f4;
-  --bg-2: #f4f1ea;
+  --bg: #faf9f4;
+  --bg-2: #f3f1e8;
 
   --surface: #ffffff;
-  --surface-2: #f7f4ee;
-  --surface-3: #eee9e0;
-  --surface-hover: #f4f1ea;
+  --surface-2: #f6f4ec;
+  --surface-3: #ece8da;
+  --surface-hover: #f3f1e8;
 
-  --border: rgba(30, 24, 14, 0.1);
-  --border-2: rgba(30, 24, 14, 0.16);
-  --border-3: rgba(30, 24, 14, 0.28);
+  --border: rgba(20, 18, 10, 0.09);
+  --border-2: rgba(20, 18, 10, 0.15);
+  --border-3: rgba(20, 18, 10, 0.26);
 
-  --text: #1a1712;
-  --text-2: #5b554c;
+  --text: #16150f;
+  --text-2: rgba(22, 21, 15, 0.68);
   /* 5.5:1 on white, 5.0:1 on surface-2. See the note in the dark block. */
-  --text-3: #6f6860;
+  --text-3: #746f5b;
 
-  --accent: #9c6f18;
-  --accent-hi: #865f12;
-  --accent-soft: rgba(156, 111, 24, 0.1);
-  --accent-line: rgba(156, 111, 24, 0.3);
-  --on-accent: #fffdf7;
+  /* Light mode inverts the fill rather than lightening the brand cream,
+     which has no legible foreground on a pale page: a near-black chip with
+     cream text on top, the same relationship as the dark theme in reverse. */
+  --accent: #17150f;
+  --accent-hi: #2b2820;
+  --accent-soft: rgba(23, 21, 15, 0.08);
+  --accent-line: rgba(23, 21, 15, 0.22);
+  --on-accent: #f3f1e4;
 
-  --success: #1b7a4f;
-  --success-soft: rgba(27, 122, 79, 0.1);
-  --success-line: rgba(27, 122, 79, 0.26);
+  --success: #1f8a5a;
+  --success-soft: rgba(31, 138, 90, 0.1);
+  --success-line: rgba(31, 138, 90, 0.28);
   --on-success: #ffffff;
 
-  --danger: #b33a35;
-  --danger-soft: rgba(179, 58, 53, 0.09);
-  --danger-line: rgba(179, 58, 53, 0.26);
+  --danger: #b8433d;
+  --danger-soft: rgba(184, 67, 61, 0.09);
+  --danger-line: rgba(184, 67, 61, 0.26);
 
-  --shadow-sm: 0 1px 2px rgba(60, 45, 20, 0.06);
-  --shadow: 0 10px 30px -14px rgba(60, 45, 20, 0.2);
-  --shadow-lg: 0 28px 70px -26px rgba(60, 45, 20, 0.3);
+  --shadow-sm: 0 1px 2px rgba(40, 32, 16, 0.06);
+  --shadow: 0 10px 30px -14px rgba(40, 32, 16, 0.2);
+  --shadow-lg: 0 28px 70px -26px rgba(40, 32, 16, 0.3);
 
-  --grain-opacity: 0.02;
+  --grain-opacity: 0.018;
 }
 
 /* --- Reset --------------------------------------------------------------- */
@@ -187,16 +208,16 @@ body {
   overflow: hidden;
 }
 
-/* Ambient warmth, off-centre so the canvas is not uniformly lit. */
+/* A single, faint cream glow off the top corner — not two competing hues.
+   The brand's own canvas is flat black; this is just enough lift that the
+   app doesn't read as a uniformly-lit vector floor. */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background:
-    radial-gradient(1100px 620px at 8% -10%, var(--accent-soft), transparent 62%),
-    radial-gradient(820px 520px at 104% 112%, var(--success-soft), transparent 64%);
+  background: radial-gradient(1200px 640px at 10% -12%, var(--accent-soft), transparent 60%);
 }
 
 /* Film grain. Kills the sterile flatness of pure vector surfaces without
@@ -284,6 +305,16 @@ code,
   letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--text-3);
+}
+
+/* The brand's one typographic flourish: an italic serif clause dropped into
+   an otherwise plain sentence, the way the marketing site closes a line.
+   Used for a trailing phrase, never for data or anything a reader scans for. */
+.accent-serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.005em;
 }
 
 :focus-visible {

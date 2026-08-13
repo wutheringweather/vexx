@@ -51,7 +51,7 @@ export default function AuditTrail(): React.JSX.Element {
         ) : (
           <Callout tone="danger">
             <strong>Chain broken at entry #{verification.brokenAtSeq}.</strong> The log was modified
-            outside VexDesk. Treat everything from that point on as untrustworthy.
+            outside Remiora. Treat everything from that point on as untrustworthy.
           </Callout>
         ))}
 

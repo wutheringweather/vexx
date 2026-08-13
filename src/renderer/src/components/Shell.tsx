@@ -4,7 +4,7 @@ import { EXECUTION_MODES, EXTERNAL_LINKS, findNetwork } from '@shared/constants'
 import { useStore } from '../lib/store'
 import { api } from '../lib/api'
 import { countdown } from '../lib/format'
-import vxMark from '../assets/vx-mark.png'
+import vxMark from '../assets/vx-mark.svg'
 import {
   IconAgent,
   IconApproval,
@@ -72,7 +72,7 @@ export default function Shell({
         <div className="brand">
           <img className="brand__mark" src={vxMark} alt="" />
           <div>
-            <div className="brand__name">VexDesk</div>
+            <div className="brand__name">Remiora</div>
             <div className="brand__tag">Local runtime</div>
           </div>
         </div>

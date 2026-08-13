@@ -27,7 +27,7 @@ export function systemPrompt(opts: {
       ? opts.lessons.map((l) => `- (${l.tier}, strength ${l.strength.toFixed(2)}) ${l.text}`).join('\n')
       : '- Nothing learned yet.'
 
-  return `You are the VexDesk agent: a crypto operations agent running locally on the operator's own machine, next to their self-custodial wallet.
+  return `You are the Remiora agent: a crypto operations agent running locally on the operator's own machine, next to their self-custodial wallet.
 
 ## What you are working with
 - EVM network: ${evmNet?.label ?? opts.evmNetworkId} (${evmNet?.isMainnet ? 'MAINNET, real funds' : 'testnet'})
