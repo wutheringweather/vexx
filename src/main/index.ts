@@ -17,19 +17,35 @@ import { bootstrapRuntimeSecrets } from './runtime-secrets'
  * a price API or the model provider directly. All of that happens in main,
  * behind the IPC allowlist, so a rogue script in the UI has nowhere to send
  * anything it managed to read.
+ *
+ * Dev mode gets a looser script-src and an extra connect-src origin, and
+ * nothing else changes. `@vitejs/plugin-react` injects an inline
+ * `<script type="module">` preamble for React Fast Refresh — present only in
+ * dev, never in the production bundle — and every component file's Refresh
+ * Babel transform calls the globals that preamble sets up. Without
+ * 'unsafe-inline' that script is blocked, so `$RefreshReg$` is never defined,
+ * so the first component module evaluated throws and the page never mounts:
+ * a window with a title bar and nothing else. `connect-src` needs the dev
+ * server's own origin for the HMR websocket, which is otherwise a different
+ * scheme (ws:) than 'self' covers. A packaged build loads everything from
+ * `file://` as one bundled script, so none of this loosening reaches it.
  */
-const CSP = [
-  "default-src 'self'",
-  "script-src 'self'",
-  `style-src 'self' 'unsafe-inline'`,
-  "img-src 'self' data:",
-  "font-src 'self' data:",
-  "connect-src 'self'",
-  "object-src 'none'",
-  "base-uri 'none'",
-  "form-action 'none'",
-  "frame-ancestors 'none'"
-].join('; ')
+function buildCsp(dev: boolean, devServerUrl?: string): string {
+  return [
+    "default-src 'self'",
+    dev ? "script-src 'self' 'unsafe-inline'" : "script-src 'self'",
+    `style-src 'self' 'unsafe-inline'`,
+    "img-src 'self' data:",
+    "font-src 'self' data:",
+    dev && devServerUrl
+      ? `connect-src 'self' ${devServerUrl} ${devServerUrl.replace(/^http/, 'ws')}`
+      : "connect-src 'self'",
+    "object-src 'none'",
+    "base-uri 'none'",
+    "form-action 'none'",
+    "frame-ancestors 'none'"
+  ].join('; ')
+}
 
 let mainWindow: BrowserWindow | null = null
 
@@ -85,11 +101,12 @@ function createWindow(): void {
 }
 
 function hardenSession(): void {
+  const csp = buildCsp(Boolean(is.dev && process.env.ELECTRON_RENDERER_URL), process.env.ELECTRON_RENDERER_URL)
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': [CSP],
+        'Content-Security-Policy': [csp],
         'X-Content-Type-Options': ['nosniff']
       }
     })

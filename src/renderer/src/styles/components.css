@@ -30,21 +30,18 @@
   -webkit-app-region: drag;
 }
 
-/* The mark is a cream monogram on a transparent ground, so this just sizes
-   and places it — no background or text styling to double up. */
-.brand__mark {
-  display: block;
-  width: 26px;
-  height: 26px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
+/* The wordmark is the whole logo now — no icon alongside it. Matches the
+   marketing site's own compact-nav brand link: Almarai, weight 500, plain
+   --text. The heavier weight and tighter tracking below are the one place
+   this app leans in over the source rather than copying it exactly — this
+   sits at the top of a dense sidebar the operator looks at for hours, not a
+   marketing header seen once, and a slightly firmer wordmark reads better as
+   an anchor there. */
 .brand__name {
-  font-family: var(--font-display);
-  font-weight: 620;
-  letter-spacing: -0.026em;
-  font-size: 14.5px;
+  font-family: var(--font-text);
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  font-size: 15px;
   line-height: 1.1;
 }
 
@@ -1424,7 +1421,14 @@ kbd {
   z-index: var(--z-base);
   height: 100%;
   display: grid;
-  place-items: center;
+  /* `safe center` centers the card when it fits, same as plain `center`, but
+     falls back to start-aligned the moment it does not: plain `center` on a
+     scrollable grid splits any overflow evenly above and below, and a
+     container can never scroll to a negative offset, so that top slice —
+     the mark, the title, however much more — was permanently unreachable at
+     this app's own enforced 700px minimum height. `safe` keeps the whole
+     card reachable at any window size instead of quietly clipping it. */
+  place-items: safe center;
   padding: var(--s-6);
   overflow-y: auto;
 }
@@ -1444,13 +1448,16 @@ kbd {
   padding: var(--s-6) var(--s-6) var(--s-4);
 }
 
-/* See the note on .brand__mark — the image is the whole mark. */
+/* The wordmark, not an icon — same text-only mark the site itself uses in
+   its compact nav bar: font-weight: 500, color: #E1E0CC, no glyph. */
 .gate-card__mark {
   display: block;
-  width: 38px;
-  height: 38px;
   margin-bottom: var(--s-4);
-  object-fit: contain;
+  font-family: var(--font-text);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  color: var(--text);
 }
 
 .gate-card__title {

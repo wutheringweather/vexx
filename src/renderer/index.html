@@ -3,10 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
-    />
+    <!--
+      No CSP meta tag here on purpose. The enforced policy comes from
+      `buildCsp` in src/main/index.ts via a response header on Electron's
+      session, which covers the document from its very first byte and can
+      tell dev apart from a packaged build. A static copy in this file — the
+      same file Vite serves in both modes — can't do that: it is either loose
+      everywhere or, as it briefly was, strict enough to block Vite's own
+      React Fast Refresh preamble and leave the window blank in `npm run dev`.
+      Two independent CSPs are also each enforced on their own, so a stale
+      copy here doesn't relax anything — it only re-creates that bug.
+    -->
     <title>Remiora</title>
   </head>
   <body>

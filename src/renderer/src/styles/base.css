@@ -17,22 +17,65 @@
    meanings.
    ========================================================================== */
 
+/* Almarai — the marketing site's actual face, not a stand-in. Self-hosted
+   rather than linked from Google Fonts: the renderer's CSP forbids the
+   network entirely (`connect-src 'self'`), so a `<link>` to fonts.googleapis.com
+   would either be blocked or require punching a hole in that policy for every
+   installer. Four bundled woff2 files cost ~72KB total and keep the "nothing
+   the renderer loads ever leaves this machine" guarantee intact. Latin subset
+   only — the UI is English-only, and the Arabic subset Google serves alongside
+   it would roughly double the weight for glyphs nothing here renders.
+   OFL-1.1 licensed; see https://fonts.google.com/specimen/Almarai/license. */
+@font-face {
+  font-family: 'Almarai';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('../assets/fonts/almarai-300.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Almarai';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/almarai-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Almarai';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/almarai-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Almarai';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('../assets/fonts/almarai-800.woff2') format('woff2');
+}
+
 :root {
-  /* Optical sizing where the platform offers it: Windows 11 ships Segoe UI
-     Variable with real Display/Text cuts, macOS ships SF Pro. Both beat a
-     generic system stack, and neither costs a network request under the CSP.
-     Almarai (the brand's marketing-site face) is geometric and rounded —
-     these are the closest offline-safe relatives. */
-  --font-display: 'Segoe UI Variable Display', -apple-system, BlinkMacSystemFont,
+  /* Almarai first, everywhere — display and text alike. The marketing site
+     uses one face for both; splitting them here bought nothing when the
+     brand face itself doesn't. Platform faces stay as the fallback for the
+     brief flash before the bundled font decodes, and for weights Almarai
+     doesn't ship (500/600, used further down, fall back to nearest-match
+     synthesis or the platform face rather than 400/700 doing duty for both). */
+  --font-display: 'Almarai', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display',
     'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
-  --font-text: 'Segoe UI Variable Text', -apple-system, BlinkMacSystemFont, 'SF Pro Text',
-    'Segoe UI', system-ui, sans-serif;
+  --font-text: 'Almarai', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Text',
+    'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'Cascadia Mono', ui-monospace, 'SF Mono', SFMono-Regular, 'JetBrains Mono',
     Consolas, monospace;
-  /* Brand accent face, standing in for Instrument Serif — used sparingly, in
-     italics, for the odd emphasised clause. Never for data. */
-  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman',
-    ui-serif, serif;
+  /* The marketing site's own italic accent resolves to this same Almarai
+     stack — its --font-serif custom property is unset, so `italic
+     font-serif` silently falls back to the body face italicised, not a
+     separate serif. Matched here rather than "corrected": the brand's own
+     rendered result is what "follows the site" means, not what its source
+     apparently intended. */
+  --font-serif: 'Almarai', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Text', 'Segoe UI',
+    system-ui, sans-serif;
 
   /* Radii vary by nesting depth — containers soften, inner controls stay
      tight. Rounder across the board than a typical instrument panel: the

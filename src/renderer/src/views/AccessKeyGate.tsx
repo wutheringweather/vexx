@@ -4,12 +4,11 @@ import { api } from '../lib/api'
 import { useSnapshot, useStore } from '../lib/store'
 import { Callout, Field } from '../components/ui'
 import { IconCheck, IconLock } from '../lib/icons'
-import vxMark from '../assets/vx-mark.svg'
 
 /**
  * First-launch provider setup.
  *
- * VexDesk is bring-your-own-key: the endpoint and the credential are the
+ * Remiora is bring-your-own-key: the endpoint and the credential are the
  * operator's, and neither is baked into the build. The key is handed to main
  * over the preload bridge and never comes back in a snapshot.
  *
@@ -54,7 +53,7 @@ export default function AccessKeyGate({ onSkip }: { onSkip: () => void }): React
     <div className="gate-screen">
       <div className="gate-card">
         <div className="gate-card__head">
-          <img className="gate-card__mark" src={vxMark} alt="" />
+          <span className="gate-card__mark">Remiora</span>
           <div className="gate-card__title">Connect a model provider</div>
           <div className="gate-card__sub">
             Remiora uses your own key, with any OpenAI-compatible endpoint. Nothing is billed to us

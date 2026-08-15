@@ -115,9 +115,10 @@ export default function Settings(): React.JSX.Element {
             />
           </Field>
 
-          {/* Bring your own key. Leaving these at the shipped values routes
-              through the VexDesk endpoint; changing them sends your traffic
-              straight to whatever provider you name, with your own key. */}
+          {/* Bring your own key. The endpoint and model below are just the
+              shipped defaults, not a Remiora-run service — changing them
+              sends your traffic straight to whatever provider you name,
+              with your own key. */}
           <div className="grid grid--2">
             <Field
               label="Endpoint"
